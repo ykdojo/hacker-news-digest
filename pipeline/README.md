@@ -83,16 +83,16 @@ The goal: from a fresh clone to a real episode running on Cloud Run. Every comma
 
    Live, mid-run (real 2026-08-14 execution; the fact-check found 2 bad claims and fired the rewrite loop, all visible as it happened):
 
-   ![Live rewrite loop](../media/rehearsal/shot3-live-rewrite-loop.jpg)
+   ![Live rewrite loop](../prototypes/replay/media/shot3-live-rewrite-loop.jpg)
 10. **Traces** (optional): with `ENABLE_TRACING=1` set (step 6 sets it), every agent/tool/model step shows up in Cloud Trace: Console > Trace explorer.
 11. **Make it daily** (optional): the scheduler command below.
 
-## Deploy and schedule
+## Schedule it daily (step 11)
+
+Uses the same variables as step 2. `SERVICE_ACCOUNT` is any service account with permission to run the job; the project's compute default works:
 
 ```bash
-gcloud builds submit --tag $REGION-docker.pkg.dev/$PROJECT/$REPO/hn-digest .
-gcloud run jobs create hn-digest --image $IMAGE --task-timeout 3600 \
-  --set-env-vars "GOOGLE_GENAI_USE_ENTERPRISE=TRUE,GOOGLE_CLOUD_LOCATION=global,PUBLISH_BUCKET=$BUCKET,STORY_CHECK=1,ENABLE_TRACING=1,GEMINI_API_KEY=$KEY"
+export SERVICE_ACCOUNT=$(gcloud iam service-accounts list --filter="email~compute@developer" --format="value(email)")
 gcloud scheduler jobs create http hn-digest-morning \
   --schedule="0 6 * * *" --time-zone="America/Los_Angeles" \
   --uri="https://run.googleapis.com/v2/projects/$PROJECT/locations/$REGION/jobs/hn-digest:run" \
