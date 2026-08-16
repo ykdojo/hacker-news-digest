@@ -26,7 +26,9 @@ Ported from the public article repo for the All Things Agentic Hackathon submiss
 
 The goal: from a fresh clone to a real episode running on Cloud Run. Every command is copy-pasteable after setting the four variables in step 2.
 
-1. **Prereqs**: a Google Cloud project with billing, the `gcloud` CLI logged in (`gcloud auth login && gcloud auth application-default login`), Python 3.12+. Get a Gemini API key (free tier works) from https://aistudio.google.com/apikey for the TTS calls.
+1. **Prereqs**: a Google Cloud project with billing enabled, the `gcloud` CLI logged in (`gcloud auth login && gcloud auth application-default login`), Python 3.12+. Get a Gemini API key (free tier works) from https://aistudio.google.com/apikey for the TTS calls.
+
+   Either a new project or one you already use works. An existing project is the smoother path, since Cloud Build and Vertex AI quota are usually set up already. Everything below works on a new project too.
 2. **Clone and set variables**:
 
    ```bash
@@ -67,8 +69,9 @@ The goal: from a fresh clone to a real episode running on Cloud Run. Every comma
    ```bash
    gcloud artifacts repositories create pipeline --repository-format=docker --location=$REGION 2>/dev/null || true
 
-   # Cloud Build needs a service account to run as. New projects no longer get the
-   # legacy Cloud Build one, so grant the default compute account the build roles.
+   # Give Cloud Build a service account to run as. Safe to re-run on a project
+   # that already builds; new projects need it, since they no longer get the
+   # legacy Cloud Build account automatically.
    export SA=$(gcloud iam service-accounts list --filter="email~compute@developer" --format="value(email)")
    for role in cloudbuild.builds.builder artifactregistry.writer storage.admin logging.logWriter; do
      gcloud projects add-iam-policy-binding $PROJECT \
@@ -91,7 +94,7 @@ The goal: from a fresh clone to a real episode running on Cloud Run. Every comma
 
    Watch progress in the Cloud Run console (execution logs), or live-tail it into the replay page (step 9).
 
-   **On a brand new project, expect `429 RESOURCE_EXHAUSTED` from Vertex AI.** Fresh projects start with very little `gemini-3.7-flash` quota, and this pipeline fans out one digest call per story in parallel. ADK retries absorb some of it, but a cold project can still fail partway. Two ways around it: request Vertex AI quota for the model, or start smaller with `WINDOW_HOURS=4` so fewer stories qualify and fewer calls run at once.
+   A note on quota. The pipeline digests stories in parallel, so it needs some Vertex AI throughput for `gemini-3.7-flash`. A project you already use for Vertex AI normally has plenty. A brand new project starts with very little, and calls can come back with a 429. If that happens, either request quota for the model or set `WINDOW_HOURS=4` so fewer stories run at once.
 8. **Subscribe**: when the run finishes, paste `https://storage.googleapis.com/$BUCKET/feed.xml` into any podcast app that follows shows by URL (Pocket Casts, Overcast, Apple Podcasts "Follow a Show by URL"). The episode mp3, script, and claim ledger are all in the bucket.
 9. **Watch it as a mission replay** (optional, no extra credentials): see [prototypes/replay](../prototypes/replay/). `fetch_run.py --date YYYY-MM-DD` rebuilds any past run into an animated replay, and `tail_run.py` live-tails a running one.
 
