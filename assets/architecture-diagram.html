@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Architecture</title>
+<!--
+  System architecture diagram for the Devpost submission. Square, 1600x1600.
+
+  Same visual language as covers.html (from the Medium article covers): dark
+  gradient, blue = deterministic code, orange = model judgment. The job's
+  internals reuse that file's flow panel, so this diagram and the article's
+  graph diagrams stay visually identical.
+
+  Structure: the three things touching the job are NOT peers, so they sit on
+  different planes with different edge styles.
+    - Cloud Scheduler is control plane. It invokes. Dashed blue, from above.
+    - Hacker News is the data input. It is read. Solid, from the left.
+    - Gemini / Vertex AI is a dependency the job calls out to. Solid, right.
+  Outputs flow down. Observability flows out to the lower right.
+
+  The pipeline is drawn as an actual graph, with the per-story fan-out and both
+  feedback loops, rather than a linear list of steps.
+
+  Boxes are placed with CSS grid; connectors are drawn in SVG afterwards from
+  real bounding boxes, so no coordinates are hand-tuned. The flow panel must
+  stay 560px wide: its split/lane connectors use a 560-wide viewBox.
+
+  Render: python3 assets/render_architecture.py
+-->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { font-family: 'Inter', -apple-system, sans-serif; }
+
+  .cover {
+    position: relative; overflow: hidden;
+    width: 1600px; height: 1600px;
+    background: #0f2040;
+    padding: 56px 60px;
+  }
+  .bg {
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, #1a1040 0%, #0f2847 35%, #0a3a5e 60%, #1a4a3a 100%);
+  }
+  .glow-orange {
+    position: absolute; top: -14%; right: -18%; width: 62%; height: 52%;
+    background: radial-gradient(circle, rgba(255, 140, 50, 0.12) 0%, transparent 65%);
+  }
+  .glow-blue {
+    position: absolute; bottom: -12%; left: -15%; width: 58%; height: 48%;
+    background: radial-gradient(circle, rgba(80, 130, 255, 0.08) 0%, transparent 65%);
+  }
+
+  .head { position: relative; z-index: 3; margin-bottom: 30px; }
+  .head h1 { font-size: 40px; font-weight: 700; color: #fff; letter-spacing: -0.015em; }
+  .head h1 .hl { color: #ff9a3c; }
+  .head p { font-size: 21px; font-weight: 500; color: rgba(255,255,255,0.45); margin-top: 8px; }
+
+  .grid {
+    position: relative; z-index: 2;
+    display: grid;
+    /* the column gap has to be wider than the widest edge label ("reads", "calls")
+       or the label overhangs the boxes it sits between */
+    grid-template-columns: 280px 1fr 280px;
+    column-gap: 76px; row-gap: 84px;
+    align-items: center;
+  }
+
+  .box {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1.5px solid rgba(255, 255, 255, 0.14);
+    border-radius: 14px;
+    padding: 17px 21px;
+  }
+  .box .t { font-size: 22px; font-weight: 600; color: rgba(255,255,255,0.92); line-height: 1.25; }
+  .box .s { font-size: 16px; font-weight: 500; color: rgba(255,255,255,0.45); margin-top: 6px; line-height: 1.42; }
+  .box.code { border-color: rgba(120, 160, 255, 0.45); }
+  .box.model { border-color: rgba(255, 154, 60, 0.45); }
+  .box.ext { border-style: dashed; border-color: rgba(255,255,255,0.28); }
+
+  /* the job wrapper */
+  .job {
+    grid-column: 2; grid-row: 2;
+    border: 2px solid rgba(255, 154, 60, 0.5);
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.04);
+    /* extra right padding reserves room for the feedback arcs and their labels,
+       which hang off the right of the 560px flow panel and must stay inside the box */
+    padding: 22px 160px 26px 26px;
+  }
+  .job .jhead { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+  .job .jname { font-size: 24px; font-weight: 700; color: #fff; }
+  .job .jmeta { font-size: 15.5px; font-weight: 600; color: #ffb86e; white-space: nowrap; }
+  .job .jsub { font-size: 15.5px; font-weight: 500; color: rgba(255,255,255,0.42); margin-top: 4px; margin-bottom: 20px; }
+
+  /* --- flow panel, same geometry as covers.html --- */
+  .flow { position: relative; display: flex; flex-direction: column; align-items: stretch; width: 560px; margin: 0 auto; }
+  .node {
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1.5px solid rgba(255, 255, 255, 0.12);
+    position: relative; z-index: 1;
+    height: 58px; border-radius: 13px; padding: 0 22px;
+  }
+  .node .nlabel { color: rgba(255, 255, 255, 0.88); font-weight: 600; font-size: 21px; }
+  .node.code { border-color: rgba(120, 160, 255, 0.45); }
+  .node.model { border-color: rgba(255, 154, 60, 0.45); }
+  .tag { font-weight: 700; letter-spacing: 0.03em; font-size: 15px; }
+  .node.code .tag { color: #a8c1ff; }
+  .node.model .tag { color: #ffb86e; }
+  .arrow {
+    align-self: center; width: 0; height: 0; position: relative; z-index: 1;
+    border-left: 9px solid transparent; border-right: 9px solid transparent;
+    border-top: 12px solid rgba(255, 255, 255, 0.35);
+  }
+  .stem { align-self: center; width: 3px; background: rgba(255, 255, 255, 0.35); z-index: 1; height: 9px; }
+  .fan { display: flex; z-index: 1; gap: 14px; }
+  .fan .node { flex: 1; justify-content: center; height: 48px; padding: 0 6px; }
+  .fan .node .nlabel { font-size: 17px; white-space: nowrap; }
+  .lanes { width: 560px; height: 24px; }
+  .split { width: 560px; height: 34px; }
+  .loop {
+    position: absolute; z-index: 0;
+    border: 3px solid rgba(255, 154, 60, 0.75);
+    border-left: none;
+    border-radius: 0 24px 24px 0;
+    right: -46px; width: 46px;
+  }
+  .loop-label {
+    position: absolute; z-index: 2;
+    color: #ffb86e; font-weight: 700; letter-spacing: 0.02em; font-size: 15px;
+    background: rgba(15, 32, 64, 0.9);
+    padding: 4px 10px; border-radius: 8px;
+    left: calc(100% + 8px); white-space: nowrap;
+  }
+  .loop-arrow {
+    position: absolute; z-index: 2; width: 0; height: 0;
+    border-top: 9px solid transparent; border-bottom: 9px solid transparent;
+    border-right: 13px solid rgba(255, 154, 60, 0.9);
+  }
+
+  .legend {
+    position: absolute; z-index: 3; left: 60px; bottom: 34px;
+    display: flex; gap: 28px; font-size: 16px; font-weight: 600;
+  }
+  .legend i { display: inline-block; width: 15px; height: 15px; border-radius: 4px; border: 2px solid; margin-right: 8px; vertical-align: -2px; }
+  .legend span { color: rgba(255,255,255,0.6); }
+  .legend .c i { border-color: rgba(120,160,255,0.75); }
+  .legend .m i { border-color: rgba(255,154,60,0.75); }
+
+  #wires { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+  .wlabel {
+    position: absolute; z-index: 3;
+    font-size: 15px; font-weight: 600; color: rgba(255,255,255,0.62);
+    background: rgba(12, 28, 52, 0.9);
+    padding: 4px 10px; border-radius: 7px; white-space: nowrap;
+    transform: translate(-50%, -50%);
+  }
+  .wlabel.ctrl { color: #a8c1ff; }
+</style>
+</head>
+<body>
+<div class="cover" id="cover">
+  <div class="bg"></div>
+  <div class="glow-orange"></div>
+  <div class="glow-blue"></div>
+
+  <div class="head">
+    <h1>Hacker News Digest &nbsp;<span class="hl">system architecture</span></h1>
+    <p>One scheduled Cloud Run job.</p>
+  </div>
+
+  <svg id="wires"></svg>
+
+  <div class="grid">
+    <div class="box code" id="sched" style="grid-column:2; grid-row:1; justify-self:center; min-width:360px; text-align:center;">
+      <div class="t">Cloud Scheduler</div>
+      <div class="s">the only thing that starts a run</div>
+    </div>
+
+    <div class="box ext" id="hn" style="grid-column:1; grid-row:2;">
+      <div class="t">Hacker News</div>
+      <div class="s">Algolia API for stories, scores and full comment trees, plus the linked article pages</div>
+    </div>
+
+    <div class="job" id="job">
+      <div class="jhead">
+        <div class="jname">Cloud Run job &middot; hn-digest</div>
+        <div class="jmeta">~11 min &nbsp;·&nbsp; ~$2-3 / episode</div>
+      </div>
+      <div class="jsub">ADK 2 graph, run to completion. A segment that still fails verification is cut rather than aired.</div>
+
+      <div class="flow" id="flow">
+        <div class="node code"><div class="nlabel">Fetch the last 26 hours</div><div class="tag">code</div></div>
+        <div class="stem"></div><div class="arrow"></div>
+        <div class="node model"><div class="nlabel">Curate 7-10 stories</div><div class="tag">model</div></div>
+
+        <svg class="split" viewBox="0 0 560 34" xmlns="http://www.w3.org/2000/svg">
+          <g stroke="rgba(255,255,255,0.35)" stroke-width="3" fill="none">
+            <path d="M280 0 V10 M65 10 H495 M65 10 V22 M208 10 V22 M352 10 V22 M495 10 V22"/>
+          </g>
+          <g fill="rgba(255,255,255,0.35)">
+            <path d="M56 22 h18 l-9 12 z M199 22 h18 l-9 12 z M343 22 h18 l-9 12 z M486 22 h18 l-9 12 z"/>
+          </g>
+        </svg>
+
+        <div class="fan" id="fanDigest">
+          <div class="node model"><div class="nlabel">digest</div></div>
+          <div class="node model"><div class="nlabel">digest</div></div>
+          <div class="node model"><div class="nlabel">digest</div></div>
+          <div class="node model"><div class="nlabel">digest</div></div>
+        </div>
+
+        <svg class="lanes" viewBox="0 0 560 24" xmlns="http://www.w3.org/2000/svg">
+          <g stroke="rgba(255,255,255,0.35)" stroke-width="3" fill="none">
+            <path d="M65 0 V12 M208 0 V12 M352 0 V12 M495 0 V12"/>
+          </g>
+          <g fill="rgba(255,255,255,0.35)">
+            <path d="M56 12 h18 l-9 11 z M199 12 h18 l-9 11 z M343 12 h18 l-9 11 z M486 12 h18 l-9 11 z"/>
+          </g>
+        </svg>
+
+        <div class="fan" id="fanCheck">
+          <div class="node model"><div class="nlabel">fact-check</div></div>
+          <div class="node model"><div class="nlabel">fact-check</div></div>
+          <div class="node model"><div class="nlabel">fact-check</div></div>
+          <div class="node model"><div class="nlabel">fact-check</div></div>
+        </div>
+
+        <svg class="split" viewBox="0 0 560 34" xmlns="http://www.w3.org/2000/svg">
+          <g stroke="rgba(255,255,255,0.35)" stroke-width="3" fill="none">
+            <path d="M65 0 V12 M208 0 V12 M352 0 V12 M495 0 V12 M65 12 H495 M280 12 V22"/>
+          </g>
+          <g fill="rgba(255,255,255,0.35)">
+            <path d="M271 22 h18 l-9 12 z"/>
+          </g>
+        </svg>
+
+        <div class="node model" id="scriptnode"><div class="nlabel">Write the script</div><div class="tag">model</div></div>
+        <div class="stem"></div><div class="arrow"></div>
+        <div class="node model" id="checknode"><div class="nlabel">Verify every claim</div><div class="tag">model</div></div>
+        <div class="stem"></div><div class="arrow"></div>
+        <div class="node model"><div class="nlabel">Render speech in segments</div><div class="tag">TTS</div></div>
+        <div class="stem"></div><div class="arrow"></div>
+        <div class="node code"><div class="nlabel">Publish mp3 + RSS</div><div class="tag">code</div></div>
+
+        <div class="loop" id="loop"></div>
+        <div class="loop-label" id="looplabel">rewrite &le;2</div>
+        <div class="loop-arrow" id="looparrow"></div>
+
+        <div class="loop" id="loop2"></div>
+        <div class="loop-label" id="looplabel2">repair &le;2</div>
+        <div class="loop-arrow" id="looparrow2"></div>
+      </div>
+    </div>
+
+    <div class="box model" id="gemini" style="grid-column:3; grid-row:2;">
+      <div class="t">Gemini &middot; Vertex AI</div>
+      <div class="s">gemini-3.7-flash for every text agent<br><br>gemini-3.1-flash-tts-preview, multi-speaker, for the two hosts</div>
+    </div>
+
+    <div class="box code" id="gcs" style="grid-column:2; grid-row:3; justify-self:center; min-width:560px; text-align:center;">
+      <div class="t">Cloud Storage &middot; public bucket</div>
+      <div class="s">mp3 &nbsp;·&nbsp; feed.xml &nbsp;·&nbsp; script &nbsp;·&nbsp; per-episode claim ledger</div>
+    </div>
+    <div class="box ext" id="apps" style="grid-column:2; grid-row:4; justify-self:center; min-width:360px; text-align:center;">
+      <div class="t">Any podcast app</div>
+      <div class="s">follow by URL</div>
+    </div>
+
+    <div class="box code" id="obs" style="grid-column:3; grid-row:3;">
+      <div class="t">Cloud Logging &middot; Cloud Trace</div>
+      <div class="s">per-line logs, plus an OTel span for every agent, tool and model call</div>
+    </div>
+    <div class="box ext" id="replay" style="grid-column:3; grid-row:4;">
+      <div class="t">Mission replay page</div>
+      <div class="s">recorded and live, rebuilt from real run logs</div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <span class="c"><i></i>deterministic code</span>
+    <span class="m"><i></i>model judgment</span>
+  </div>
+</div>
+
+<script>
+  // --- feedback loop arcs inside the flow panel (same method as covers.html) ---
+  function arc(topEl, bottomEl, loopId, labelId, arrowId) {
+    const top = topEl.offsetTop + topEl.offsetHeight / 2;
+    const bottom = bottomEl.offsetTop + bottomEl.offsetHeight / 2;
+    const loop = document.getElementById(loopId);
+    loop.style.top = top + 'px';
+    loop.style.height = (bottom - top) + 'px';
+    document.getElementById(labelId).style.top = (top + (bottom - top) / 2 - 15) + 'px';
+    const a = document.getElementById(arrowId);
+    a.style.top = (top - 9) + 'px';
+    a.style.right = '-2px';
+  }
+  arc(document.getElementById('scriptnode'), document.getElementById('checknode'), 'loop', 'looplabel', 'looparrow');
+  arc(document.getElementById('fanDigest'), document.getElementById('fanCheck'), 'loop2', 'looplabel2', 'looparrow2');
+
+  // --- connectors between the infrastructure boxes ---
+  const cover = document.getElementById('cover');
+  const svg = document.getElementById('wires');
+  const R = cover.getBoundingClientRect();
+  svg.setAttribute('viewBox', `0 0 ${R.width} ${R.height}`);
+  svg.setAttribute('width', R.width);
+  svg.setAttribute('height', R.height);
+
+  const NS = 'http://www.w3.org/2000/svg';
+  const defs = document.createElementNS(NS, 'defs');
+  for (const [id, color] of [['ah', 'rgba(255,255,255,0.42)'], ['ahc', 'rgba(150,180,255,0.7)']]) {
+    const m = document.createElementNS(NS, 'marker');
+    m.setAttribute('id', id);
+    m.setAttribute('viewBox', '0 0 10 10');
+    m.setAttribute('refX', '9'); m.setAttribute('refY', '5');
+    m.setAttribute('markerWidth', '7'); m.setAttribute('markerHeight', '7');
+    m.setAttribute('orient', 'auto-start-reverse');
+    const p = document.createElementNS(NS, 'path');
+    p.setAttribute('d', 'M 0 0 L 10 5 L 0 10 z');
+    p.setAttribute('fill', color);
+    m.appendChild(p); defs.appendChild(m);
+  }
+  svg.appendChild(defs);
+
+  // frac slides the anchor along the side (0..1, default centred), so two edges
+  // leaving the same side of one box get distinct starting points.
+  const anchor = (el, side, frac = 0.5) => {
+    const b = el.getBoundingClientRect();
+    const x = b.left - R.left, y = b.top - R.top;
+    if (side === 'top') return [x + b.width * frac, y];
+    if (side === 'bottom') return [x + b.width * frac, y + b.height];
+    if (side === 'left') return [x, y + b.height * frac];
+    return [x + b.width, y + b.height * frac];
+  };
+
+  function wire(fromId, fromSide, toId, toSide, label, opts = {}) {
+    let [x1, y1] = anchor(document.getElementById(fromId), fromSide, opts.fromFrac);
+    let [x2, y2] = anchor(document.getElementById(toId), toSide, opts.toFrac);
+    // alignY: for a horizontal edge between boxes of different heights, run the
+    // line straight at the named box's centre instead of S-bending between the
+    // two side midpoints.
+    if (opts.alignY) {
+      const b = document.getElementById(opts.alignY).getBoundingClientRect();
+      y1 = y2 = b.top - R.top + b.height / 2;
+    }
+    const path = document.createElementNS(NS, 'path');
+    const horizontal = fromSide === 'left' || fromSide === 'right';
+    // corner: leave horizontally, arc once, arrive vertically — for edges that
+    // exit a side and land on a top, where an S-curve would look like a flat Z
+    const d = opts.corner
+      ? `M ${x1} ${y1} C ${x1 + (x2 - x1) * 0.55} ${y1}, ${x2} ${y1 + (y2 - y1) * 0.45}, ${x2} ${y2}`
+      : horizontal
+      ? `M ${x1} ${y1} C ${(x1 + x2) / 2} ${y1}, ${(x1 + x2) / 2} ${y2}, ${x2} ${y2}`
+      : `M ${x1} ${y1} C ${x1} ${(y1 + y2) / 2}, ${x2} ${(y1 + y2) / 2}, ${x2} ${y2}`;
+    path.setAttribute('d', d);
+    path.setAttribute('fill', 'none');
+    path.setAttribute('stroke', opts.ctrl ? 'rgba(150,180,255,0.7)' : 'rgba(255,255,255,0.42)');
+    path.setAttribute('stroke-width', opts.ctrl ? 2.5 : 3);
+    if (opts.dashed) path.setAttribute('stroke-dasharray', '8 7');
+    path.setAttribute('marker-end', `url(#${opts.ctrl ? 'ahc' : 'ah'})`);
+    svg.appendChild(path);
+
+    if (label) {
+      const el = document.createElement('div');
+      el.className = 'wlabel' + (opts.ctrl ? ' ctrl' : '');
+      el.innerHTML = label;
+      // Horizontal runs are short (one column gap), so a centred label would sit
+      // on top of the arrow and hide it. Lift those labels clear of the line.
+      const dy = opts.dy !== undefined ? opts.dy : ((horizontal || opts.corner) ? -26 : 0);
+      // corner labels sit above the horizontal leg, not at the curve midpoint
+      el.style.left = ((x1 + x2) / 2 + (opts.dx || 0)) + 'px';
+      el.style.top = ((opts.corner ? y1 : (y1 + y2) / 2) + dy) + 'px';
+      cover.appendChild(el);
+    }
+  }
+
+  wire('sched', 'bottom', 'job', 'top', 'invokes &nbsp;·&nbsp; daily 6:00 AM', { ctrl: true, dashed: true });
+  // straight horizontal runs at the external box's centre height
+  wire('hn', 'right', 'job', 'left', 'reads', { alignY: 'hn' });
+  wire('job', 'right', 'gemini', 'left', 'calls', { alignY: 'gemini' });
+  // two edges leave the job's bottom: episode output from the centre,
+  // observability from further right, ending downward INTO the obs box's top
+  wire('job', 'bottom', 'gcs', 'top', 'writes the episode', {});
+  wire('gcs', 'bottom', 'apps', 'top', 'RSS 2.0', {});
+  wire('job', 'right', 'obs', 'top', 'stdout &nbsp;·&nbsp; OTel spans', { dashed: true, fromFrac: 0.94, corner: true });
+  wire('obs', 'bottom', 'replay', 'top', 'fetch_run.py / tail_run.py', { dashed: true });
+</script>
+</body>
+</html>

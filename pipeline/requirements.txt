@@ -1,0 +1,7 @@
+google-genai>=2.16.0
+google-adk>=2.6.1
+google-cloud-storage
+requests
+opentelemetry-sdk
+opentelemetry-exporter-otlp-proto-grpc
+opentelemetry-resourcedetector-gcp

@@ -1,0 +1,402 @@
+[
+ {
+  "claim_id": 1,
+  "story_id": 49242739,
+  "claim": "Tl;dv left its Firestore database wide open.",
+  "kind": "article_fact",
+  "status": "verified",
+  "note": "The provided text explicitly states that Tl;dv left its Firestore database wide open, exposing metadata for over 180,000 meetings."
+ },
+ {
+  "claim_id": 2,
+  "story_id": 49242739,
+  "claim": "Metadata for over 180,000 meetings was exposed.",
+  "kind": "quantified",
+  "status": "verified",
+  "note": "The article and digest both confirm that metadata for 181,874 meetings was exposed, which supports the claim of 'over 180,000'."
+ },
+ {
+  "claim_id": 3,
+  "story_id": 49242739,
+  "claim": "The post earned 591 points and 192 comments.",
+  "kind": "quantified",
+  "status": "verified",
+  "note": "The authoritative metadata explicitly confirms that the post earned 591 points and 192 comments."
+ },
+ {
+  "claim_id": 4,
+  "story_id": 49242739,
+  "claim": "Anyone with a free account could grab live conference IDs and drop into ongoing uninvited calls.",
+  "kind": "article_fact",
+  "status": "verified",
+  "note": "The article explicitly states that any authenticated user (even on a free tier) could query the Firestore database for live meetings, grab the conference IDs, and join ongoing calls uninvited."
+ },
+ {
+  "claim_id": 5,
+  "story_id": 49242739,
+  "claim": "The exposure affected government agencies from 23 countries, major universities, and corporate entities.",
+  "kind": "quantified",
+  "status": "verified",
+  "note": "The article explicitly lists that government meetings from 23 countries, major universities (dozens of .edu and .ac domains), and corporate entities were affected by the exposure."
+ },
+ {
+  "claim_id": 6,
+  "story_id": 49242739,
+  "claim": "A security researcher repeatedly warned Tl;dv leadership starting in January 2026, but the issue remained unfixed six months later.",
+  "kind": "article_fact",
+  "status": "verified",
+  "note": "The sources explicitly state that the security researcher reported the vulnerability to the CEO (Raphael Allstadt) and the CTO starting on January 28, 2026, sent multiple follow-ups, and the issue remained unfixed six months later in July 2026."
+ },
+ {
+  "claim_id": 7,
+  "story_id": 49242739,
+  "claim": "Tl;dv left an internal World Cup prediction app unauthenticated, leaking their employee directory.",
+  "kind": "article_fact",
+  "status": "verified",
+  "note": "The article explicitly confirms that tl;dv left an internal World Cup prediction app unauthenticated, leaking 19 employee names and corporate emails, effectively exposing their employee directory."
+ },
+ {
+  "claim_id": 8,
+  "story_id": 49242739,
+  "claim": "Commenters expressed outrage over leadership inaction.",
+  "kind": "thread_characterization",
+  "status": "verified",
+  "note": "The digest explicitly lists 'Outrage over leadership inaction and lack of accountability' as a comment theme, which is supported by multiple raw comments criticizing the CEO for ignoring the vulnerability for six months."
+ },
+ {
+  "claim_id": 9,
+  "story_id": 49242739,
+  "claim": "Commenters criticized the company's move-fast engineering culture and use of Firebase.",
+  "kind": "thread_characterization",
+  "status": "verified",
+  "note": "The digest explicitly lists 'Criticism of Firebase and move fast engineering culture' as a comment theme, and the raw comments contain multiple remarks criticizing Firebase's lack of 'secure by default' settings and the lazy 'move fast' software engineering approach."
+ },
+ {
+  "claim_id": 10,
+  "story_id": 49249150,
+  "claim": "The post received 327 points and 460 comments.",
+  "kind": "quantified",
+  "status": "verified",
+  "note": "The metadata exactly supports the claim that the post received 327 points and 460 comments."
+ },
+ {
+  "claim_id": 11,
+  "story_id": 49249150,
+  "claim": "Illinois passed HB5511, requiring OS providers to build an age-declaration setup screen and age-bracket API by 2028.",
+  "kind": "article_fact",
+  "status": "verified",
+  "note": "The sources explicitly confirm that Illinois passed HB5511, which mandates operating system providers to create an age-declaration setup screen and an encrypted API that provides an age bracket signal to requesting apps by January 1, 2028."
+ },
+ {
+  "claim_id": 12,
+  "story_id": 49249150,
+  "claim": "Illinois HB5511 contains no exemptions for open-source software.",
+  "kind": "article_fact",
+  "status": "verified",
+  "note": "The provided text explicitly states that unlike similar laws in Colorado and California, the Illinois bill (HB5511) contains no exemptions for open-source software."
+ },
+ {
+  "claim_id": 13,
+  "story_id": 49249150,
+  "claim": "Fines under HB5511 range from 2,500 to 7,500 dollars per affected child.",
+  "kind": "quantified",
+  "status": "verified",
+  "note": "The article and digest both explicitly state that the civil penalties under the bill are up to $2,500 for a negligent violation and up to $7,500 for an intentional one per affected child."
+ },
+ {
+  "claim_id": 14,
+  "story_id": 49249150,
+  "claim": "Commenters debated the practicality of enforcing age verification laws on open-source software.",
+  "kind": "thread_characterization",
+  "status": "verified",
+  "note": "The digest explicitly lists 'Practicality of Enforcement on Open Source' as a theme, and the raw comments show multiple users (e.g., gh02t, johnsmith1840) debating how the law could actually be enforced on Linux and open-source infrastructure."
+ },
+ {
+  "claim_id": 15,
+  "story_id": 49249150,
+  "claim": "Commenters discussed the slippery slope of mandatory age declaration.",
+  "kind": "thread_characterization",
+  "status": "verified",
+  "note": "The digest explicitly lists 'The Slippery Slope of Age Declaration' as a comment theme, citing quotes from commenters who call it a 'technical ratchet' and argue that accepting the right to ask opens the door to verified answers."
+ },
+ {
+  "claim_id": 16,
+  "story_id": 49250836,
+  "claim": "The post garnered 447 points and 527 comments.",
+  "kind": "quantified",
+  "status": "verified",
+  "note": "The story metadata confirms that the post received exactly 447 points and 527 comments."
+ },
+ {
+  "claim_id": 17,
+  "story_id": 49250836,
+  "claim": "Google's AI summaries are returning errors such as hallucinating sunset times.",
+  "kind": "article_fact",
+  "status": "verified",
+  "note": "The article and digest both explicitly state that Google's new AI summaries are hallucinating or inventing sunset times."
+ },
+ {
+  "claim_id": 18,
+  "story_id": 49250836,
+  "claim": "Inserting AI between users and original sources reduces click-through traffic to sources like Wikipedia.",
+  "kind": "article_fact",
+  "status": "verified",
+  "note": "The sources explicitly state that AI systems scrape Wikipedia's content directly, eliminating the need for users to click through and reducing vital click-through traffic."
+ },
+ {
+  "claim_id": 19,
+  "story_id": 49250836,
+  "claim": "The Internet Archive faces engineering strains, cyberattacks, and copyright lawsuits.",
+  "kind": "article_fact",
+  "status": "verified",
+  "note": "The provided text directly states that the Internet Archive is facing engineering strains, cyberattacks, and copyright lawsuits."
+ },
+ {
+  "claim_id": 20,
+  "story_id": 49250836,
+  "claim": "Companies are planting content on Reddit specifically to influence AI summaries.",
+  "kind": "article_fact",
+  "status": "verified",
+  "note": "The article explicitly states that companies are planting content on Reddit to influence answers generated by AI search."
+ },
+ {
+  "claim_id": 21,
+  "story_id": 49250836,
+  "claim": "France and Denmark are treating information retrieval as a strategic asset and moving toward homegrown digital infrastructure.",
+  "kind": "article_fact",
+  "status": "verified",
+  "note": "The sources directly state that countries like France and Denmark are treating information retrieval as a strategic asset and moving toward homegrown or open-source digital infrastructure to reduce reliance on foreign suppliers."
+ },
+ {
+  "claim_id": 22,
+  "story_id": 49250836,
+  "claim": "A German court held Google liable for false statements generated by its AI overview.",
+  "kind": "article_fact",
+  "status": "verified",
+  "note": "The article explicitly states that a German court recently held Google liable for false statements generated by its AI overview feature."
+ },
+ {
+  "claim_id": 23,
+  "story_id": 49250836,
+  "claim": "Commenters debated AI search versus deep human understanding.",
+  "kind": "thread_characterization",
+  "status": "verified",
+  "note": "The digest explicitly lists 'The utility of AI search versus deep human understanding' as one of the main comment themes, citing users who contrasted the quick answers provided by AI with the deeper learning gained from reading source documents."
+ },
+ {
+  "claim_id": 24,
+  "story_id": 49250836,
+  "claim": "Commenters worried about the collapse of incentives for creators.",
+  "kind": "thread_characterization",
+  "status": "verified",
+  "note": "The digest explicitly lists 'The collapse of incentives for human creators' as a comment theme, and this is further supported in the raw comments by a user discussing how the 'virtuous cycle' of sites generating revenue from clicks is now 'completely busted'."
+ },
+ {
+  "claim_id": 25,
+  "story_id": 49245023,
+  "claim": "The post received 366 points and 544 comments.",
+  "kind": "quantified",
+  "status": "verified",
+  "note": "The metadata confirms the post received exactly 366 points and 544 comments."
+ },
+ {
+  "claim_id": 26,
+  "story_id": 49245023,
+  "claim": "A 35-year-old Mars Bar found in Scunthorpe weighs 62.5 grams compared to today's 40-gram bars.",
+  "kind": "quantified",
+  "status": "verified",
+  "note": "The provided sources confirm that a 35-year-old Mars Bar found in Scunthorpe weighs 62.5 grams, whereas today's Mars Bars weigh 40 grams."
+ },
+ {
+  "claim_id": 27,
+  "story_id": 49245023,
+  "claim": "Mars Incorporated stated size updates reflect consumer demand, manufacturing costs, and cocoa prices.",
+  "kind": "article_fact",
+  "status": "verified",
+  "note": "The article quotes a Mars spokesperson stating that updates to their bar sizes reflect consumer demand, manufacturing costs, and the price of cocoa."
+ },
+ {
+  "claim_id": 28,
+  "story_id": 49245023,
+  "claim": "The finder kept the Mars Bar after her post went viral.",
+  "kind": "article_fact",
+  "status": "verified",
+  "note": "The article confirms that the finder, Victoria Gordon, kept the 1991 Mars Bar after her social media post went viral, noting she almost threw it in the skip but is now considering what to do with it, even jokingly suggesting a UK tour."
+ },
+ {
+  "claim_id": 29,
+  "story_id": 49245023,
+  "claim": "Commenters weighed in on shrinkflation.",
+  "kind": "thread_characterization",
+  "status": "verified",
+  "note": "Multiple commenters discussed the topic of shrinkflation, weighing whether it is beneficial (reducing portion sizes of junk food) or driven by corporate greed. This perfectly aligns with the characterization that commenters weighed in on shrinkflation."
+ },
+ {
+  "claim_id": 30,
+  "story_id": 49245023,
+  "claim": "Commenters discussed historical ingredient quality in chocolate.",
+  "kind": "thread_characterization",
+  "status": "verified",
+  "note": "The provided digest and comments explicitly show commenters discussing historical ingredient quality, comparing the 1991 Mars bar's ingredients to modern chocolate and debating if older products had 'better ingredients and fewer cheap substitutes.'"
+ },
+ {
+  "claim_id": 31,
+  "story_id": 49243880,
+  "claim": "The post brought in 550 points and 503 comments.",
+  "kind": "quantified",
+  "status": "verified",
+  "note": "The post's metadata matches the claim exactly, showing 550 points and 503 comments."
+ },
+ {
+  "claim_id": 32,
+  "story_id": 49243880,
+  "claim": "Zuckerberg published an essay on Meta's commitment to open AI, envisioning personal AI agents.",
+  "kind": "article_fact",
+  "status": "verified",
+  "note": "The digest and comments confirm that Zuckerberg published an essay (or manifesto) on open AI, which envisions highly capable personal AI agents for everyone."
+ },
+ {
+  "claim_id": 33,
+  "story_id": 49243880,
+  "claim": "Commenters saw Meta's open AI strategy as strategic market positioning to improve its ad-driven business.",
+  "kind": "thread_characterization",
+  "status": "verified",
+  "note": "The claim is supported by the digest and the comment from HDThoreaun, who explicitly states that Meta's open AI strategy aims to utilize AI to make customers consume more ads."
+ },
+ {
+  "claim_id": 34,
+  "story_id": 49254880,
+  "claim": "The post got 486 points and 291 comments.",
+  "kind": "quantified",
+  "status": "verified",
+  "note": "The metadata confirms the post received 486 points and 291 comments."
+ },
+ {
+  "claim_id": 35,
+  "story_id": 49254880,
+  "claim": "France is targeting B2C commercial telemarketing while allowing B2B calls with existing contractual relationships.",
+  "kind": "article_fact",
+  "status": "verified",
+  "note": "The digest confirms that the legislation targets B2C commercial telemarketing and that B2B communications are still allowed if there is an existing contractual relationship."
+ },
+ {
+  "claim_id": 36,
+  "story_id": 49254880,
+  "claim": "French telcos were mandated to block spoofed numbers starting in January.",
+  "kind": "article_fact",
+  "status": "verified",
+  "note": "The source material confirms that the French regulator mandated telcos to implement a block of spoofed phone numbers in January."
+ },
+ {
+  "claim_id": 37,
+  "story_id": 49254880,
+  "claim": "Commenters debated the effectiveness of the telemarketing ban.",
+  "kind": "thread_characterization",
+  "status": "verified",
+  "note": "Supported by the debate between commenters about whether the ban will actually stop spam calls or if scammers will just ignore it."
+ },
+ {
+  "claim_id": 38,
+  "story_id": 49245487,
+  "claim": "The post received 128 points and 181 comments.",
+  "kind": "quantified",
+  "status": "verified",
+  "note": "The metadata confirms the post received 128 points and 181 comments."
+ },
+ {
+  "claim_id": 39,
+  "story_id": 49245487,
+  "claim": "A study suggested GLP-1 weight-loss drugs boost women's employment opportunities.",
+  "kind": "article_fact",
+  "status": "verified",
+  "note": "The provided digest and story title explicitly state that a recent study linked GLP-1 weight-loss drugs to a larger increase in women's employment opportunities than obtaining a degree."
+ },
+ {
+  "claim_id": 40,
+  "story_id": 49245487,
+  "claim": "The thread heavily discussed lookism and societal treatment based on attractiveness.",
+  "kind": "thread_characterization",
+  "status": "verified",
+  "note": "The digest and the comments both explicitly show a heavy discussion around 'lookism', 'pretty privilege', and how society treats attractive people better."
+ },
+ {
+  "claim_id": 41,
+  "story_id": 49245487,
+  "claim": "Commenters debated whether GLP-1 employment benefits stemmed from physical appearance or cognitive and psychological factors.",
+  "kind": "thread_characterization",
+  "status": "verified",
+  "note": "The comments explicitly discuss and debate whether the career and social benefits of GLP-1 drugs are due to the 'Halo effect' (reduced weight stigma and improved physical appearance) or the 'Confidence effect' and cognitive improvements (such as increased focus, energy, and better sleep)."
+ },
+ {
+  "claim_id": 42,
+  "story_id": 49246804,
+  "claim": "The post received 390 points and 145 comments.",
+  "kind": "quantified",
+  "status": "verified",
+  "note": "The metadata confirms the post received 390 points and 145 comments."
+ },
+ {
+  "claim_id": 43,
+  "story_id": 49246804,
+  "claim": "Needle2 is a 14MB agentic LLM focused on function calling for edge hardware.",
+  "kind": "quantified",
+  "status": "verified",
+  "note": "The HN title explicitly describes Needle2 as a '14MB agentic LLM', and the digest confirms its focus on function calling and edge hardware like the Raspberry Pi."
+ },
+ {
+  "claim_id": 44,
+  "story_id": 49246804,
+  "claim": "Developers noted Needle2's quirky fallback behavior in the thread.",
+  "kind": "thread_characterization",
+  "status": "verified",
+  "note": "The claim is supported by the digest's theme 'Quirky fallback behavior and hallucinations' and the associated comment quotes discussing how the model falls back to 'lock the door'."
+ },
+ {
+  "claim_id": 45,
+  "story_id": 49249481,
+  "claim": "The post received 231 points and 129 comments.",
+  "kind": "quantified",
+  "status": "verified",
+  "note": "The metadata confirms the post received 231 points and 129 comments."
+ },
+ {
+  "claim_id": 46,
+  "story_id": 49249481,
+  "claim": "The submission links to a Dutch consumer action website regarding whether Sony should compensate customers for no longer selling digital download codes.",
+  "kind": "article_fact",
+  "status": "verified",
+  "note": "The digest and raw comments explicitly confirm the submission links to a Dutch consumer action site (massaschadeconsument.nl) aiming to get compensation from Sony for stopping the sale of digital download codes to third parties."
+ },
+ {
+  "claim_id": 47,
+  "story_id": 49249481,
+  "claim": "Commenters debated digital store monopolies and hardware unlocking.",
+  "kind": "thread_characterization",
+  "status": "verified",
+  "note": "The digest and raw comments directly support that these two themes were prominent discussions in the thread, specifically mentioning digital store monopolies and a debate over the right to unlock console hardware."
+ },
+ {
+  "claim_id": 48,
+  "story_id": 49242653,
+  "claim": "Squeak 6.1 launched to 274 points and 134 comments.",
+  "kind": "quantified",
+  "status": "verified",
+  "note": "The metadata exactly matches the stated points (274) and comments (134) for Squeak 6.1."
+ },
+ {
+  "claim_id": 49,
+  "story_id": 49242653,
+  "claim": "Commenters praised Smalltalk as a foundational language but expressed frustration over the lack of high-DPI display support.",
+  "kind": "thread_characterization",
+  "status": "verified",
+  "note": "The sources support the claim as stated. Commenters discussed Smalltalk's legacy in expanding insight into computer programming and specifically voiced frustration that Squeak still lacks fixes for high-DPI displays."
+ },
+ {
+  "claim_id": 50,
+  "story_id": 49242653,
+  "claim": "Some commenters recommended Cuis Smalltalk as a modern UI alternative using hardware-accelerated vector graphics.",
+  "kind": "thread_characterization",
+  "status": "verified",
+  "note": "Commenters adius and isr both recommend Cuis Smalltalk, highlighting its full high-DPI support and use of hardware-accelerated vector graphics."
+ }
+]

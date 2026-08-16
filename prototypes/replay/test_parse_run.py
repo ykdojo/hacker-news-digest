@@ -1,0 +1,169 @@
+"""Unit + integration tests for parse_run.py. Run: python3 -m unittest -v
+
+No pipeline run needed: fixtures/2026-08-11.log is the real Aug 11 Cloud Run
+log (plus real noise lines), and the ledger/titles JSONs are the real
+artifacts from that episode.
+"""
+
+import json
+import os
+import unittest
+
+from parse_run import build, parse_lines, stories_from_ledger
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+FIXTURE = os.path.join(HERE, "fixtures", "2026-08-11.log")
+LEDGER = os.path.join(HERE, "2026-08-11-ledger.json")
+TITLES = os.path.join(HERE, "titles.json")
+
+
+def load():
+    lines = open(FIXTURE).readlines()
+    ledger = json.load(open(LEDGER))
+    titles = json.load(open(TITLES))
+    return lines, ledger, titles
+
+
+class TestParseFull(unittest.TestCase):
+    def setUp(self):
+        self.lines, self.ledger, self.titles = load()
+        self.data = build(self.lines, self.ledger, self.titles)
+        self.events = self.data["events"]
+
+    def test_stories_and_claims(self):
+        self.assertEqual(len(self.data["stories"]), 10)
+        self.assertEqual(len(self.data["claims"]), 50)
+        self.assertEqual(sum(s["main"] for s in self.data["stories"]), 4)
+        self.assertTrue(self.data["stories"][0]["title"].startswith("Tl;dv"))
+
+    def test_two_factcheck_passes(self):
+        chips = [e["chips"] for e in self.events if "chips" in e]
+        self.assertEqual(chips, [{"pass": 1, "count": 40, "fail": 1},
+                                 {"pass": 2, "count": 50, "fail": 0}])
+
+    def test_rewrite_loop(self):
+        rw = [e for e in self.events if e.get("edge") == "rewrite"]
+        self.assertEqual(len(rw), 1)
+        self.assertEqual(rw[0]["stat"]["rewrites"], 1)
+
+    def test_node_states_progression(self):
+        # every core node ends 'done' via some event; cutter never activates
+        done = set()
+        for e in self.events:
+            for k, v in (e.get("set") or {}).items():
+                if v == "done":
+                    done.add(k)
+        self.assertTrue({"fetch", "curate", "digest", "script", "check",
+                         "router", "tts", "publish"} <= done)
+        self.assertNotIn("cutter", done)
+
+    def test_final_event_card(self):
+        last = self.events[-1]
+        self.assertTrue(last.get("fin"))
+        self.assertIn("Tl;dv", last["card"]["title"])
+        self.assertEqual(last["card"]["dur"], "8:35")
+        self.assertEqual(last["card"]["verified"], "50/50")
+
+    def test_noise_ignored(self):
+        logs = " ".join(e.get("log", "") for e in self.events)
+        self.assertNotIn("Traceback", logs)
+        self.assertNotIn("tenacity", logs)
+        self.assertIn("node error (auto-retried", logs)  # surfaced as meta
+
+    def test_stats(self):
+        stats = {}
+        for e in self.events:
+            stats.update(e.get("stat") or {})
+        self.assertEqual(stats["candidates"], 20)
+        self.assertEqual(stats["picks"], 10)
+        self.assertEqual(stats["words"], 1200)   # last write wins
+        self.assertEqual(stats["claims"], "50/50")
+        self.assertEqual(stats["episode"], "8:35")
+
+
+class TestIncremental(unittest.TestCase):
+    """Simulates live mode: every prefix of the log must parse cleanly and
+    grow monotonically (this is what tail_run.py does each cycle)."""
+
+    def test_prefixes_monotonic(self):
+        lines, ledger, titles = load()
+        stories = stories_from_ledger(ledger, titles)
+        prev = 0
+        for k in range(len(lines) + 1):
+            events, _, _ = parse_lines(lines[:k], stories)
+            self.assertGreaterEqual(len(events), prev)
+            prev = len(events)
+        self.assertTrue(events[-1].get("fin"))
+
+    def test_no_ledger_derives_stories(self):
+        lines, _, _ = load()
+        events, stories, _ = parse_lines(lines)
+        # 9 of 10 stories appear in repair lines (France never needed one)
+        self.assertEqual(len(stories), 9)
+        self.assertTrue(all(s["title"].startswith("story ") for s in stories))
+
+
+class TestCutPath(unittest.TestCase):
+    def test_cut_reaches_cutter_then_recheck(self):
+        lines = [
+            "fetch_candidates: 5 candidates",
+            "curate: 2 main + 1 quick",
+            "digest_stories: 3 digests, 1 articles fetched",
+            "write_script: 10 lines, 400 words",
+            "fact_check: 12 checked, 0 from cache",
+            "fact_check: 12 claims, 2 failed",
+            "review_router: rewrite cap hit -> CUT #1",
+            "fact_check: 10 checked, 0 from cache",
+            "fact_check: 10 claims, 0 failed",
+            "review_router: all verified -> RENDER",
+        ]
+        events, _, _ = parse_lines(lines)
+        sets = [e.get("set") or {} for e in events]
+        self.assertTrue(any(s.get("cutter") == "active" for s in sets))
+        self.assertTrue(any(s.get("cutter") == "done" for s in sets))
+
+
+class TestGolden(unittest.TestCase):
+    """parse_run on the fixtures must exactly reproduce the committed data.js
+    (which is generated by: python3 parse_run.py --log fixtures/2026-08-11.log
+     --ledger 2026-08-11-ledger.json --titles titles.json --out data.js)."""
+
+    def test_matches_committed_data_js(self):
+        lines, ledger, titles = load()
+        fresh = build(lines, ledger, titles)
+        committed = open(os.path.join(HERE, "data.js")).read()
+        committed = json.loads(
+            committed.removeprefix("const DATA = ").rstrip().rstrip(";"))
+        self.assertEqual(fresh, committed)
+
+
+if __name__ == "__main__":
+    unittest.main()
+
+
+class TestClaimLines(unittest.TestCase):
+    def test_claim_texts_parsed_live(self):
+        lines = [
+            "write_script: 10 lines, 400 words",
+            "fact_check: 2 checked, 0 from cache",
+            "  claim 1 [article_fact] ok: The library is 14MB.",
+            "  claim 2 [quantified] FAIL: Over 180k meetings were exposed.",
+            "fact_check: 2 claims, 1 failed",
+        ]
+        events, _, claims = parse_lines(lines)
+        self.assertEqual(len(claims), 2)
+        self.assertEqual(claims[0], {"id": 1, "kind": "article_fact",
+                                     "status": "ok",
+                                     "claim": "The library is 14MB."})
+        self.assertEqual(claims[1]["status"], "FAIL")
+
+    def test_latest_pass_wins(self):
+        lines = [
+            "  claim 1 [article_fact] FAIL: Old claim.",
+            "fact_check: 1 claims, 1 failed",
+            "  claim 1 [article_fact] ok: New claim.",
+            "fact_check: 1 claims, 0 failed",
+        ]
+        _, _, claims = parse_lines(lines)
+        self.assertEqual(claims[0]["claim"], "New claim.")
+        self.assertEqual(claims[0]["status"], "ok")

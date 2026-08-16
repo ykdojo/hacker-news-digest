@@ -1,0 +1,45 @@
+Node execution failed with exception
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/site-packages/google/adk/models/google_llm.py", line 282, in generate_content_async
+    response = await self.api_client.aio.models.generate_content(
+tenacity.RetryError: RetryError[<Future at 0x7f2 state=finished raised ClientError>]
+fetch_candidates: 20 candidates
+curate: 4 main + 6 quick
+  digest 49245487: dropped 1 unverifiable quote(s)/theme(s)
+  story 49243880: 3 unsupported digest statement(s), repair round 1
+  story 49250836: 8 unsupported digest statement(s), repair round 1
+  story 49242739: 2 unsupported digest statement(s), repair round 1
+  story 49245023: 3 unsupported digest statement(s), repair round 1
+  story 49242653: 1 unsupported digest statement(s), repair round 1
+  story 49246804: 1 unsupported digest statement(s), repair round 1
+  story 49245487: 4 unsupported digest statement(s), repair round 1
+  story 49249481: 4 unsupported digest statement(s), repair round 1
+  story 49249150: 4 unsupported digest statement(s), repair round 1
+  digest 49245487: dropped 1 unverifiable quote(s)/theme(s)
+  story 49250836: 4 unsupported digest statement(s), repair round 2
+  story 49245023: 2 unsupported digest statement(s), repair round 2
+  story 49242653: 1 unsupported digest statement(s), repair round 2
+  story 49245487: 4 unsupported digest statement(s), repair round 2
+  story 49249150: 2 unsupported digest statement(s), repair round 2
+  story 49250836: still 6 unsupported after 2 repairs; script-level checks will catch the rest
+  story 49245023: still 2 unsupported after 2 repairs; script-level checks will catch the rest
+  story 49242653: still 1 unsupported after 2 repairs; script-level checks will catch the rest
+  story 49245487: still 4 unsupported after 2 repairs; script-level checks will catch the rest
+  story 49249150: still 3 unsupported after 2 repairs; script-level checks will catch the rest
+digest_stories: 10 digests, 4 articles fetched
+write_script: 37 lines, 1306 words
+fact_check: 40 checked, 0 from cache
+fact_check: 40 claims, 1 failed
+review_router: 1 failed -> REWRITE #1
+write_script: 37 lines, 1200 words
+fact_check: 49 checked, 1 from cache
+fact_check: 50 claims, 0 failed
+review_router: all verified -> RENDER
+  tts segment 1/5 (271 words)
+  tts segment 2/5 (284 words)
+  tts segment 3/5 (293 words)
+  tts segment 4/5 (284 words)
+  tts segment 5/5 (68 words)
+render_tts: 515s episode, 5 segments -> out/2026-08-11.mp3
+publish: https://storage.googleapis.com/hn-digest-9107/feed.xml
+RESULT: {'published': 'https://storage.googleapis.com/hn-digest-9107/feed.xml', 'episode': {'date': '2026-08-11', 'title': 'HN Digest 2026-08-11: Tl;dv: Over 180k meetings left wide open', 'duration_s': 515, 'bytes': 8243372}}

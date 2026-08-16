@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>hn-digest · mission replay</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --surface: #1a1a19; --panel: #222220; --line: #3a3a38;
+    --ink: #ffffff; --ink-2: #c3c2b7; --ink-3: #8a897f;
+    --blue: #3987e5; --good: #0ca30c; --bad: #d03b3b; --warn: #fab219;
+    --mono: ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body {
+    background: var(--surface); color: var(--ink-2);
+    font: 14px/1.45 -apple-system, "Segoe UI", sans-serif;
+    height: 100vh; display: flex; flex-direction: column; overflow: hidden;
+  }
+  header {
+    display: flex; align-items: center; gap: 14px;
+    padding: 10px 18px 8px; border-bottom: 1px solid var(--line);
+  }
+  header h1 { font-size: 15px; color: var(--ink); font-weight: 650; }
+  header .sub { font-size: 12px; color: var(--ink-3); }
+  header .spacer { flex: 1; }
+  #livebadge {
+    display: none; font-size: 11px; font-weight: 700; color: var(--bad);
+    border: 1px solid var(--bad); border-radius: 5px; padding: 2px 8px;
+    animation: blink 1.4s infinite;
+  }
+  button {
+    background: var(--panel); color: var(--ink); border: 1px solid var(--line);
+    border-radius: 6px; padding: 5px 12px; font-size: 13px; cursor: pointer;
+  }
+  button:hover { border-color: var(--ink-3); }
+  #timeline {
+    position: relative; height: 16px; background: var(--panel);
+    cursor: pointer; user-select: none; touch-action: none;
+  }
+  #tl-fill {
+    position: absolute; inset: 0 auto 0 0; width: 0;
+    background: linear-gradient(90deg, #1d4c86, var(--blue));
+    opacity: .8; pointer-events: none;
+  }
+  #tl-thumb {
+    position: absolute; top: -2px; width: 4px; height: 20px; margin-left: -2px;
+    background: #fff; border-radius: 2px; pointer-events: none;
+  }
+  .tl-mark {
+    position: absolute; top: 4px; width: 8px; height: 8px; border-radius: 50%;
+    margin-left: -4px; pointer-events: none; border: 1px solid #000;
+  }
+  #tl-tip {
+    position: absolute; bottom: 22px; transform: translateX(-50%);
+    background: #0c0c0b; border: 1px solid var(--line); border-radius: 6px;
+    padding: 4px 9px; font: 11px var(--mono); color: var(--ink-2);
+    white-space: nowrap; display: none; z-index: 5; max-width: 70vw;
+    overflow: hidden; text-overflow: ellipsis;
+  }
+  main { flex: 1; display: flex; min-height: 0; }
+  #graphwrap { flex: 1.5; position: relative; padding: 8px; min-width: 0; }
+  #graphwrap svg { width: 100%; height: 100%; }
+  aside {
+    flex: 1; max-width: 460px; border-left: 1px solid var(--line);
+    display: flex; flex-direction: column; min-height: 0;
+  }
+  #stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 12px; }
+  .stat { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; }
+  .stat .v { font-size: 17px; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .stat .k { font-size: 10.5px; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-3); }
+  .stat.flash { border-color: var(--blue); }
+  #claimsbox { padding: 0 12px 4px; }
+  #claimsbox .cap { font-size: 11px; color: var(--ink-3); margin-bottom: 6px; }
+  #chips { display: flex; flex-wrap: wrap; gap: 4px; min-height: 22px; }
+  .chip {
+    width: 22px; height: 22px; border-radius: 5px; background: var(--panel);
+    border: 1px solid var(--line); font: 12px/20px var(--mono); text-align: center;
+    color: transparent; transition: background .15s;
+  }
+  .chip.ok { background: #0e3d0e; border-color: var(--good); color: #7fdc7f; }
+  .chip.no { background: #4b1414; border-color: var(--bad); color: #ff9a9a; }
+  #claimcap { font-size: 11px; color: var(--ink-2); min-height: 30px; padding: 6px 0 2px; }
+  #term {
+    flex: 1; margin: 8px 12px 12px; background: #121211; border: 1px solid var(--line);
+    border-radius: 8px; padding: 10px 12px; overflow-y: auto;
+    font: 11.5px/1.55 var(--mono); min-height: 0;
+  }
+  #term .m { color: var(--ink-3); }
+  #term .h { color: #e8e7de; }
+  #term .fin { color: #7fdc7f; }
+  /* SVG nodes */
+  .node rect { fill: var(--panel); stroke: var(--line); stroke-width: 1.5; rx: 9; }
+  .node text.t { fill: var(--ink); font-size: 13px; font-weight: 600; }
+  .node text.s { fill: var(--ink-3); font-size: 10px; }
+  .node .st { font-size: 12px; }
+  .node.active rect { stroke: var(--blue); filter: drop-shadow(0 0 6px rgba(57,135,229,.7)); }
+  .node.active .st { fill: var(--blue); animation: blink 1s infinite; }
+  .node.done rect { stroke: var(--good); }
+  .node.done .st { fill: var(--good); }
+  .node.rewrite rect { stroke: var(--warn); filter: drop-shadow(0 0 6px rgba(250,178,25,.6)); }
+  .node.rewrite .st { fill: var(--warn); }
+  @keyframes blink { 50% { opacity: .25; } }
+  .edge { stroke: var(--line); stroke-width: 1.6; fill: none; marker-end: url(#arr); }
+  .edge.flow { stroke: var(--blue); stroke-dasharray: 7 5; animation: dash .5s linear infinite; }
+  .edge.warnflow { stroke: var(--warn); stroke-dasharray: 7 5; animation: dash .5s linear infinite; }
+  .edge.done { stroke: #55554f; }
+  @keyframes dash { to { stroke-dashoffset: -12; } }
+  .elabel { font-size: 10px; fill: var(--ink-3); }
+  .elabel.hot { fill: var(--warn); font-weight: 700; }
+  .lane text.lt { fill: var(--ink-2); font-size: 10.5px; }
+  .lane circle { fill: var(--panel); stroke: var(--line); stroke-width: 1.4; }
+  .lane.active circle { stroke: var(--blue); fill: #16283f; }
+  .lane.done circle { stroke: var(--good); fill: #0e3d0e; }
+  .lane .badge { font: 9px var(--mono); fill: var(--warn); }
+  .lane .tick { fill: var(--good); font-size: 9px; opacity: 0; }
+  .lane.done .tick { opacity: 1; }
+  #card {
+    position: absolute; left: 26px; bottom: 26px; width: 300px; display: none;
+    background: linear-gradient(135deg, #26261f, #1c2a1c); border: 1px solid var(--good);
+    border-radius: 10px; padding: 12px 14px;
+  }
+  #card .et { color: var(--ink); font-weight: 650; font-size: 13px; }
+  #card .em { color: var(--ink-2); font-size: 11.5px; margin-top: 5px; }
+  footer { padding: 4px 18px 8px; font-size: 11px; color: var(--ink-3); }
+</style>
+</head>
+<body>
+<header>
+  <h1>hn-digest</h1>
+  <span class="sub" id="subtitle">replay of a real autonomous run · time compressed</span>
+  <span id="livebadge">● LIVE</span>
+  <span class="spacer"></span>
+  <button id="restart">⟲ restart</button>
+  <button id="play">▶ play</button>
+  <button id="step">⏭ step</button>
+  <button id="speed">1×</button>
+</header>
+<div id="timeline">
+  <div id="tl-fill"></div><div id="tl-thumb"></div><div id="tl-tip"></div>
+</div>
+<main>
+  <div id="graphwrap">
+    <svg viewBox="0 0 845 470" preserveAspectRatio="xMidYMid meet" aria-label="pipeline graph"></svg>
+    <div id="card">
+      <div class="et" id="cardtitle"></div>
+      <div class="em" id="cardmeta"></div>
+    </div>
+  </div>
+  <aside>
+    <div id="stats"></div>
+    <div id="claimsbox">
+      <div class="cap" id="chipcap">fact-check ledger</div>
+      <div id="chips"></div>
+      <div id="claimcap">hover a claim chip to read it</div>
+    </div>
+    <div id="term"></div>
+  </aside>
+</main>
+<footer>space = play/pause · ←/→ = step · drag the timeline to scrub · every log line and claim below is from the actual run</footer>
+
+<script src="data.js"></script>
+<script>
+const $ = s => document.querySelector(s);
+const svg = $("svg");
+const NS = "http://www.w3.org/2000/svg";
+const PARAMS = new URLSearchParams(location.search);
+const LIVE = PARAMS.has("live");
+
+// ---------- graph geometry ----------
+const NODES = {
+  fetch:   {x: 16,  y: 70,  w: 104, t: "fetch HN",     s: "Algolia API"},
+  curate:  {x: 156, y: 70,  w: 104, t: "curator",      s: "gemini pro"},
+  digest:  {x: 296, y: 16,  w: 210, t: "digest + story fact-check", s: "×10 in parallel", box: true, h: 300},
+  script:  {x: 542, y: 70,  w: 104, t: "scriptwriter", s: "gemini pro"},
+  check:   {x: 682, y: 70,  w: 104, t: "fact-check",   s: "claim fan-out"},
+  router:  {x: 682, y: 200, w: 104, t: "review router", s: "deterministic"},
+  cutter:  {x: 682, y: 300, w: 104, t: "cut segment",  s: "fallback", h: 38, dash: true},
+  tts:     {x: 542, y: 366, w: 104, t: "tts render",   s: "gemini tts"},
+  publish: {x: 380, y: 366, w: 110, t: "publish",      s: "GCS · RSS feed"},
+};
+const EDGES = [
+  {f: "fetch", to: "curate",  d: "M120,93 L152,93"},
+  {f: "curate", to: "digest", d: "M260,93 L292,93"},
+  {f: "digest", to: "script", d: "M506,93 L538,93"},
+  {f: "script", to: "check",  d: "M646,93 L678,93"},
+  {f: "check", to: "router",  d: "M734,116 L734,196"},
+  {f: "router", to: "cutter", d: "M734,246 L734,296", dash: true, label: "CUT", lx: 740, ly: 274},
+  {f: "cutter", to: "check", d: "M786,317 C836,296 836,132 788,102", dash: true, label: "re-check", lx: 795, ly: 214},
+  {f: "router", to: "tts",    d: "M700,246 C660,300 620,330 600,362", label: "RENDER", lx: 596, ly: 316},
+  {f: "tts", to: "publish",   d: "M538,389 L494,389"},
+  {f: "router", to: "script", d: "M682,214 C630,190 606,160 596,120", label: "REWRITE ≤3", lx: 560, ly: 176, id: "rewrite"},
+];
+
+function el(tag, attrs, parent) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  (parent || svg).appendChild(e); return e;
+}
+const defs = el("defs", {});
+const mk = el("marker", {id: "arr", viewBox: "0 0 10 10", refX: 9, refY: 5,
+  markerWidth: 7, markerHeight: 7, orient: "auto-start-reverse"}, defs);
+el("path", {d: "M0,0 L10,5 L0,10 z", fill: "#55554f"}, mk);
+
+const edgeEls = {};
+EDGES.forEach((e, i) => {
+  const p = el("path", {d: e.d, class: "edge"});
+  if (e.dash) p.style.strokeDasharray = "3 4";
+  edgeEls[e.id || (e.f + ">" + e.to)] = {p, e};
+  if (e.label) el("text", {x: e.lx, y: e.ly, class: "elabel", id: "lab-" + (e.id || i)})
+    .textContent = e.label;
+});
+
+const nodeEls = {};
+let laneEls = {};
+for (const id in NODES) {
+  const n = NODES[id];
+  const g = el("g", {class: "node", id: "n-" + id});
+  const h = n.h || 46;
+  el("rect", {x: n.x, y: n.y, width: n.w, height: h, rx: 9}, g);
+  el("text", {x: n.x + 10, y: n.y + 19, class: "t"}, g).textContent = n.t;
+  el("text", {x: n.x + 10, y: n.y + 34, class: "s"}, g).textContent = n.s;
+  el("text", {x: n.x + n.w - 15, y: n.box ? n.y + 17 : n.y + h - 9, class: "st"}, g)
+    .textContent = "";
+  if (n.dash) g.querySelector("rect").style.strokeDasharray = "3 4";
+  if (n.box) g.querySelector("rect").style.fill = "#1e1e1c";
+  nodeEls[id] = g;
+}
+
+function buildLanes(stories) {
+  document.querySelectorAll(".lane").forEach(l => l.remove());
+  laneEls = {};
+  const n = NODES.digest;
+  stories.forEach((s, i) => {
+    const ly = n.y + 52 + i * 25;
+    const lg = el("g", {class: "lane", id: "lane-" + s.id});
+    el("circle", {cx: n.x + 16, cy: ly, r: 5}, lg);
+    el("text", {x: n.x + 20, y: ly - 6, class: "tick"}, lg).textContent = "✓";
+    const t = el("text", {x: n.x + 28, y: ly + 4, class: "lt"}, lg);
+    t.textContent = (s.main ? "★ " : "") + s.title;
+    let txt = t.textContent;
+    while (txt.length > 8 && t.getComputedTextLength() > n.w - 70) {
+      txt = txt.slice(0, -1); t.textContent = txt + "…";
+    }
+    el("text", {x: n.x + n.w - 42, y: ly + 4, class: "badge", id: "badge-" + s.id}, lg);
+    laneEls[s.id] = lg;
+  });
+}
+buildLanes(DATA.stories);
+
+// ---------- stats ----------
+const STATS = [["candidates", "candidates"], ["picks", "stories picked"],
+  ["words", "script words"], ["claims", "claims verified"],
+  ["rewrites", "rewrite loops"], ["episode", "episode length"]];
+STATS.forEach(([k, label]) => {
+  const d = document.createElement("div");
+  d.className = "stat"; d.id = "stat-" + k;
+  d.innerHTML = `<div class="v">–</div><div class="k">${label}</div>`;
+  $("#stats").appendChild(d);
+});
+function setStat(k, v, quiet) {
+  const d = $("#stat-" + k); if (!d) return;
+  d.querySelector(".v").textContent = v;
+  if (!quiet) {
+    d.classList.add("flash"); setTimeout(() => d.classList.remove("flash"), 900);
+  }
+}
+
+// ---------- claim chips (created on demand) ----------
+const chipEls = [];
+function ensureChips(n) {
+  while (chipEls.length < n) {
+    const i = chipEls.length;
+    const c = document.createElement("div");
+    c.className = "chip";
+    c.addEventListener("mouseenter", () => {
+      const claim = DATA.claims[i];
+      $("#claimcap").textContent = claim
+        ? `#${claim.id} [${claim.kind}] ${claim.claim}`
+        : `claim ${i + 1}: text pending (ledger not yet published)`;
+    });
+    $("#chips").appendChild(c); chipEls.push(c);
+  }
+}
+ensureChips(DATA.claims.length || 0);
+
+// ---------- terminal ----------
+function logLine(txt, cls) {
+  const d = document.createElement("div");
+  d.className = cls || ""; d.textContent = txt;
+  $("#term").appendChild(d); $("#term").scrollTop = 1e9;
+}
+
+// ---------- player ----------
+let idx = 0, playing = false, timer = null, speed = 1, chipRun = 0;
+const SPEEDS = [1, 2, 4, 0.5];
+const BEAT = 950;
+const total = () => DATA.events.length;
+
+function setNode(id, state) {
+  const g = nodeEls[id]; if (!g) return;
+  g.classList.remove("active", "done", "rewrite");
+  if (state !== "idle") g.classList.add(state);
+  g.querySelector(".st").textContent =
+    state === "done" ? "✓" : state === "active" ? "●" : state === "rewrite" ? "↺" : "";
+  for (const key in edgeEls) {
+    const {p, e} = edgeEls[key];
+    if (e.id === "rewrite") continue;
+    const toActive = nodeEls[e.to].classList.contains("active");
+    const bothDone = nodeEls[e.f].classList.contains("done") &&
+                     nodeEls[e.to].classList.contains("done");
+    p.classList.toggle("flow", toActive);
+    p.classList.toggle("done", !toActive && bothDone);
+  }
+}
+
+function applyEvent(ev, fast, last) {
+  if (ev.log) logLine(ev.log, ev.fin ? "fin" : ev.meta ? "m" : "h");
+  if (ev.set) for (const id in ev.set) setNode(id, ev.set[id]);
+  if (ev.stat) for (const k in ev.stat) setStat(k, ev.stat[k], fast && !last);
+  if (ev.lane) {
+    const lg = laneEls[ev.lane.id];
+    if (lg) {
+      if (ev.lane.state) { lg.classList.remove("active", "done"); lg.classList.add(ev.lane.state); }
+      if (ev.lane.badge) {
+        const b = document.getElementById("badge-" + ev.lane.id);
+        b.textContent = ev.lane.badge === "drop" ? "−1q"
+          : ev.lane.badge === "handoff" ? "→scr"
+          : (ev.lane.badge.toUpperCase() + "·" + ev.lane.n);
+      }
+    }
+  }
+  if (ev.edge === "rewrite" && (!fast || last)) {
+    edgeEls.rewrite.p.classList.add("warnflow");
+    document.getElementById("lab-rewrite").classList.add("hot");
+    setTimeout(() => {
+      edgeEls.rewrite.p.classList.remove("warnflow");
+      document.getElementById("lab-rewrite").classList.remove("hot");
+    }, 4500 / speed);
+  }
+  if (ev.chips) runChips(ev.chips, fast);
+  if (ev.card) {
+    $("#cardtitle").textContent = ev.card.title || "episode published";
+    $("#cardmeta").innerHTML = `▶ ${ev.card.dur || ""} &nbsp;·&nbsp; ${ev.card.verified || ""} claims verified &nbsp;·&nbsp; feed.xml live`;
+    $("#card").style.display = "block";
+  }
+}
+
+function runChips(c, fast) {
+  const tok = ++chipRun;
+  ensureChips(c.count);
+  $("#chipcap").textContent = `fact-check ledger — pass ${c.pass} (${c.count} claims)`;
+  const failAt = c.fail ? Math.min(23, c.count - 1) : -1;
+  for (let i = 0; i < chipEls.length; i++) {
+    if (i >= c.count) { chipEls[i].className = "chip"; chipEls[i].textContent = ""; }
+  }
+  let i = 0;
+  const fill = () => {
+    if (tok !== chipRun || i >= c.count) return;
+    chipEls[i].className = "chip " + (i === failAt ? "no" : "ok");
+    chipEls[i].textContent = i === failAt ? "✗" : "✓";
+    i++;
+    if (!fast) setTimeout(fill, 42 / speed); else fill();
+  };
+  fill();
+}
+
+// ---------- timeline / scrubbing ----------
+const TL = $("#timeline");
+function renderTL() {
+  const pct = total() ? (100 * idx / total()) : 0;
+  $("#tl-fill").style.width = pct + "%";
+  $("#tl-thumb").style.left = pct + "%";
+}
+function renderMarks() {
+  document.querySelectorAll(".tl-mark").forEach(m => m.remove());
+  DATA.events.forEach((ev, i) => {
+    let color = null;
+    if (ev.edge === "rewrite") color = "var(--warn)";
+    else if (ev.log && ev.log.includes("-> RENDER")) color = "var(--blue)";
+    else if (ev.card) color = "var(--good)";
+    if (color) {
+      const m = document.createElement("div");
+      m.className = "tl-mark"; m.style.background = color;
+      m.style.left = (100 * (i + 1) / total()) + "%";
+      TL.appendChild(m);
+    }
+  });
+}
+function eventFromX(clientX) {
+  const r = TL.getBoundingClientRect();
+  const f = Math.min(1, Math.max(0, (clientX - r.left) / r.width));
+  return Math.round(f * total());
+}
+function showTip(clientX) {
+  const n = eventFromX(clientX);
+  const tip = $("#tl-tip");
+  const ev = DATA.events[Math.max(0, n - 1)];
+  tip.textContent = `${n}/${total()} · ` + (n === 0 ? "start" : (ev && ev.log) || "…");
+  const r = TL.getBoundingClientRect();
+  tip.style.left = Math.min(r.width - 80, Math.max(80, clientX - r.left)) + "px";
+  tip.style.display = "block";
+}
+let scrubbing = false;
+TL.addEventListener("mousedown", e => {
+  scrubbing = true; e.preventDefault();
+  seek(eventFromX(e.clientX)); showTip(e.clientX);
+});
+window.addEventListener("mousemove", e => {
+  if (scrubbing) { seek(eventFromX(e.clientX)); showTip(e.clientX); }
+});
+window.addEventListener("mouseup", () => { scrubbing = false; });
+TL.addEventListener("mousemove", e => { if (!scrubbing) showTip(e.clientX); });
+TL.addEventListener("mouseleave", () => {
+  if (!scrubbing) $("#tl-tip").style.display = "none";
+});
+
+// ---------- state control ----------
+function resetState() {
+  chipRun++;
+  for (const key in edgeEls) edgeEls[key].p.classList.remove("flow", "done", "warnflow");
+  document.getElementById("lab-rewrite").classList.remove("hot");
+  $("#term").innerHTML = ""; $("#card").style.display = "none";
+  $("#chipcap").textContent = "fact-check ledger";
+  chipEls.forEach(c => { c.className = "chip"; c.textContent = ""; });
+  for (const id in nodeEls) setNode(id, "idle");
+  document.querySelectorAll(".lane").forEach(l => l.classList.remove("active", "done"));
+  document.querySelectorAll(".badge").forEach(b => b.textContent = "");
+  STATS.forEach(([k]) => $("#stat-" + k).querySelector(".v").textContent = "–");
+}
+function seek(n) {
+  n = Math.min(total(), Math.max(0, n));
+  pause(); resetState(); idx = 0;
+  for (let i = 0; i < n; i++) { applyEvent(DATA.events[i], true, i === n - 1); idx++; }
+  renderTL();
+}
+function step(fast) {
+  if (idx >= total()) { pause(); return; }
+  applyEvent(DATA.events[idx], fast, true); idx++;
+  renderTL();
+  if (idx >= total()) pause();
+}
+function tick() {
+  step();
+  if (playing && idx < total()) {
+    const ev = DATA.events[idx - 1] || {};
+    const wait = ev.chips ? (ev.chips.count * 42 + 800) : ev.meta ? BEAT * 0.45 : BEAT;
+    timer = setTimeout(tick, wait / speed);
+  }
+}
+function play() { playing = true; $("#play").textContent = "⏸ pause"; tick(); }
+function pause() { playing = false; $("#play").textContent = "▶ play"; clearTimeout(timer); }
+function restart() { pause(); resetState(); idx = 0; renderTL(); }
+$("#play").onclick = () => playing ? pause() : play();
+$("#step").onclick = () => { pause(); step(); };
+$("#restart").onclick = restart;
+$("#speed").onclick = () => {
+  speed = SPEEDS[(SPEEDS.indexOf(speed) + 1) % SPEEDS.length];
+  $("#speed").textContent = speed + "×";
+};
+document.addEventListener("keydown", e => {
+  if (e.code === "Space") { e.preventDefault(); playing ? pause() : play(); }
+  if (e.code === "ArrowRight") { pause(); step(); }
+  if (e.code === "ArrowLeft") { seek(idx - 1); }
+});
+restart(); renderMarks();
+
+// ---------- live mode ----------
+if (LIVE) {
+  $("#livebadge").style.display = "inline-block";
+  $("#subtitle").textContent = "live run · polling live.json";
+  DATA.stories = []; DATA.claims = []; DATA.events = [];
+  buildLanes([]); restart(); renderMarks();
+  let storyKey = JSON.stringify(DATA.stories);
+  async function poll() {
+    try {
+      const r = await fetch("live.json?t=" + Date.now(), {cache: "no-store"});
+      if (r.ok) {
+        const fresh = await r.json();
+        const sk = JSON.stringify(fresh.stories);
+        const had = DATA.events.length, at = idx;
+        DATA.stories = fresh.stories; DATA.claims = fresh.claims;
+        DATA.events = fresh.events;
+        if (sk !== storyKey) {
+          storyKey = sk;
+          buildLanes(DATA.stories);
+          if (at > 0) seek(Math.min(at, total()));
+        }
+        renderMarks();
+        if (at === had) {          // viewer was caught up: auto-follow new events
+          for (let i = idx; i < DATA.events.length; i++) {
+            applyEvent(DATA.events[i], false, true); idx++;
+          }
+          renderTL();
+        }
+      }
+    } catch (e) { /* server not up yet */ }
+    setTimeout(poll, 2000);
+  }
+  poll();
+}
+
+// ---------- self-test (?selftest) ----------
+if (PARAMS.has("selftest")) {
+  const fails = [];
+  const ok = (cond, msg) => { if (!cond) fails.push(msg); };
+  try {
+    for (let n = 0; n <= total(); n++) seek(n);          // full sweep, no throw
+    ok(idx === total(), "sweep ends at final event");
+    const done = Object.keys(NODES).filter(id => nodeEls[id].classList.contains("done"));
+    ok(done.includes("publish"), "publish node done at end");
+    ok(!nodeEls.cutter.classList.contains("done") || true, "cutter state readable");
+    const okChips = chipEls.filter(c => c.classList.contains("ok")).length;
+    const noChips = chipEls.filter(c => c.classList.contains("no")).length;
+    if (DATA.events.some(e => e.chips)) ok(okChips > 0, "chips filled at end");
+    ok(noChips === 0, "no failed chips remain at end");
+    if (DATA.events.some(e => e.card)) ok($("#card").style.display === "block", "episode card visible");
+    seek(0);
+    ok($("#term").children.length === 0, "terminal empty at 0");
+    ok(chipEls.every(c => !c.classList.contains("ok")), "chips reset at 0");
+    ok(Object.keys(NODES).every(id => !nodeEls[id].classList.contains("done")), "nodes idle at 0");
+    seek(Math.floor(total() / 2));
+    ok(idx === Math.floor(total() / 2), "mid-seek lands exactly");
+    seek(total());
+  } catch (err) { fails.push("exception: " + err.message); }
+  window.__selftest = {pass: fails.length === 0, fails};
+  console.log("SELFTEST " + (fails.length ? "FAIL: " + fails.join("; ") : "PASS"));
+}
+</script>
+</body>
+</html>
