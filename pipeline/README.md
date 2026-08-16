@@ -55,9 +55,12 @@ The goal: from a fresh clone to a real episode running on Cloud Run. Every comma
 5. **Cheap local test first** (no TTS, no publish; stops before the paid steps). Edit `PROJECT` at the top of `run_local.py`, then:
 
    ```bash
-   pip install -r requirements.txt
+   python3 -m venv .venv && source .venv/bin/activate
+   python3 -m pip install -r requirements.txt
    DRY_RUN=1 GEMINI_API_KEY=$KEY python run_local.py
    ```
+
+   A virtualenv keeps this off your system Python; on many setups a bare `pip install` either fails with `externally-managed-environment` or `pip` is not on PATH at all. Tip: add `WINDOW_HOURS=3` to look at a shorter slice of Hacker News and cut the dry run's cost and time.
 
 6. **Build and deploy the job**:
 
