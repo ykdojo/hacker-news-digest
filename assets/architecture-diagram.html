@@ -78,10 +78,11 @@
   .box.model { border-color: rgba(255, 154, 60, 0.45); }
   .box.ext { border-style: dashed; border-color: rgba(255,255,255,0.28); }
 
-  /* the job wrapper */
+  /* the job wrapper: neutral border on purpose — the container mixes code and
+     model nodes, so it must not carry either legend color */
   .job {
     grid-column: 2; grid-row: 2;
-    border: 2px solid rgba(255, 154, 60, 0.5);
+    border: 2px solid rgba(255, 255, 255, 0.32);
     border-radius: 20px;
     background: rgba(255, 255, 255, 0.04);
     /* extra right padding reserves room for the feedback arcs and their labels,
