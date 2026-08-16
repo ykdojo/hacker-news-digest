@@ -34,11 +34,17 @@ cd hacker-news-digest/pipeline
 
 ## Mission replay
 
-[prototypes/replay/](prototypes/replay/) is an interactive replay of a real production run, built from the actual Cloud Run logs and the episode's claim ledger: the agent graph lights up stage by stage, story lanes show repair rounds, claim chips fill in as verification passes, and a rewrite loop fires on camera when a claim fails. It has a recorded mode (any past run via `fetch_run.py --date`) and a live mode that tails a run in progress. Tests and usage in [prototypes/replay/testing.md](prototypes/replay/testing.md).
+[prototypes/replay/](prototypes/replay/) is an interactive replay of a real production run, built from the actual Cloud Run logs and the episode's claim ledger. The agent graph lights up stage by stage, story lanes show repair rounds, claim chips fill in as verification passes, and a rewrite loop fires on camera when a claim fails. It has a recorded mode (any past run via `fetch_run.py --date`) and a live mode that tails a run in progress. Tests and usage in [prototypes/replay/testing.md](prototypes/replay/testing.md).
 
 ```bash
 cd prototypes/replay && python3 -m http.server 8000   # then open http://localhost:8000
 ```
+
+![Replay of the real Aug 11 production run, 4x speed](prototypes/replay/media/replay.gif)
+
+The moment that matters, from a live-tailed run. The fact-check found 2 bad claims (the red chips), the router went amber, and REWRITE #1 fired, all while the run was still going:
+
+![Live mode catching the rewrite loop](prototypes/replay/media/shot3-live-rewrite-loop.jpg)
 
 ## Repo map
 
