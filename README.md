@@ -40,12 +40,6 @@ cd hacker-news-digest/pipeline
 cd prototypes/replay && python3 -m http.server 8000   # then open http://localhost:8000
 ```
 
-## Numbers
-
-- A clean run takes about **11 minutes** end to end and costs **~US$2-3 per episode** (one measured run: 659.2K tokens in / 117.7K out, visible in its Cloud Trace header). The idle system costs nothing.
-- Stress-tested on day-one Gemini 3.7 Flash quota: dozens of 429s absorbed by ADK retries, 2 rewrite loops and both cut-segment fallbacks fired, and the episode still shipped fully verified with zero human intervention.
-- Fact-check design was A/B tested: per-story checking (`STORY_CHECK=1`) beat script-level-only checking and is the production default.
-
 ## Repo map
 
 | Path | What it is |
