@@ -27,7 +27,7 @@ Stack: **Google ADK 2** (graph workflow with dynamic per-story fan-out), **Gemin
 The short version:
 
 ```bash
-git clone https://github.com/delfinadap/hacker-news-digest.git
+git clone https://github.com/ykdojo/hacker-news-digest.git
 cd hacker-news-digest/pipeline
 # then follow pipeline/README.md: set 4 variables, enable APIs,
 # run locally with DRY_RUN=1, deploy as a Cloud Run job, execute

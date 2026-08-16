@@ -30,7 +30,7 @@ The goal: from a fresh clone to a real episode running on Cloud Run. Every comma
 2. **Clone and set variables**:
 
    ```bash
-   git clone https://github.com/delfinadap/hacker-news-digest.git
+   git clone https://github.com/ykdojo/hacker-news-digest.git
    cd hacker-news-digest/pipeline
    export PROJECT=your-project-id REGION=us-central1 BUCKET=your-bucket-name KEY=your-gemini-api-key
    gcloud config set project $PROJECT
