@@ -614,6 +614,7 @@ def build_feed(episodes, base_url):
 @node
 def publish(node_input: dict) -> dict:
     stamp = node_input["date"]
+    os.makedirs("out", exist_ok=True)
     if not node_input["mp3"]:
         with open(f"out/{stamp}-ledger.json", "w") as f:
             json.dump(node_input["ledger"], f, indent=1)
