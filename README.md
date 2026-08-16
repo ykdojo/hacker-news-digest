@@ -5,7 +5,7 @@ A daily podcast written, fact-checked, and published entirely by agents on Googl
 Every morning at 6 AM Pacific, a Cloud Run job reads the last 26 hours of Hacker News, picks the stories worth talking about, digests and fact-checks each one against the actual linked articles and comment threads, writes a two-host script, verifies that script claim by claim, renders the audio with multi-speaker Gemini TTS, and publishes an mp3 plus an RSS feed to a public bucket. Paste the feed URL into any podcast app and it is a real show. No human is involved at any step.
 
 - **Listen / demo page**: https://ykdojo.github.io/awesome-agents-on-google-cloud/hn-podcast-demo/
-- **Write-up**: [Turning Hacker News into a daily podcast with ADK 2, Gemini TTS, and Cloud Run jobs](https://medium.com/google-cloud/turning-hacker-news-into-a-daily-podcast-with-adk-2-gemini-tts-and-cloud-run-jobs-02c2d53fdcf2) (Google Cloud - Community)
+- **Write-up**: [Turning Hacker News into a daily podcast with ADK 2, Gemini TTS, and Cloud Run jobs](https://medium.com/google-cloud/turning-hacker-news-into-a-daily-podcast-with-adk-2-gemini-tts-and-cloud-run-jobs-02c2d53fdcf2)
 
 Built for the [All Things Agentic Hackathon](https://allthingsagentichackathon.devpost.com/) (category: Taskmaster).
 
