@@ -20,7 +20,8 @@ Ported from the public article repo for the All Things Agentic Hackathon submiss
 - `STORY_CHECK=1`: per-story digest fact-checking. Recommended, and the A/B winner
 - `DRY_RUN=1`: stop before TTS and publishing, for cheap logic tests
 - `ENABLE_TRACING=1`: export agent/tool/model spans to Cloud Trace (service account needs `roles/cloudtrace.agent`, then view at Console > Trace explorer)
-- `MODEL_PRO` / `MODEL_FLASH`: override the model defaults (`gemini-3.7-flash` / `gemini-3.6-flash`)
+- `MODEL_PRO` / `MODEL_FLASH`: override the models. Both default to `gemini-3.7-flash`
+- `WINDOW_HOURS`: lookback window in hours, default 26
 
 ## Run it yourself, step by step
 
@@ -70,7 +71,7 @@ The goal: from a fresh clone to a real episode running on Cloud Run. Every comma
    gcloud artifacts repositories create pipeline --repository-format=docker --location=$REGION 2>/dev/null || true
 
    # Give Cloud Build a service account to run as. Safe to re-run on a project
-   # that already builds; new projects need it, since they no longer get the
+   # that already builds. New projects need it, since they no longer get the
    # legacy Cloud Build account automatically.
    export SA=$(gcloud iam service-accounts list --filter="email~compute@developer" --format="value(email)")
    for role in cloudbuild.builds.builder artifactregistry.writer storage.admin logging.logWriter; do
