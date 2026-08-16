@@ -4,11 +4,13 @@ The diagram submitted to Devpost is [assets/architecture.png](assets/architectur
 
 ![System architecture](assets/architecture.png)
 
-The per-node agent graphs (7 diagrams) are in the [article](https://medium.com/google-cloud/turning-hacker-news-into-a-daily-podcast-with-adk-2-gemini-tts-and-cloud-run-jobs-02c2d53fdcf2); this is the system-level picture the submission rules ask for.
+The per-node agent graphs (7 diagrams) are in the [article](https://medium.com/google-cloud/turning-hacker-news-into-a-daily-podcast-with-adk-2-gemini-tts-and-cloud-run-jobs-02c2d53fdcf2). This is the system-level picture the submission rules ask for.
 
 ## The same thing as text
 
-Three different kinds of thing touch the job, and they are not peers. Cloud Scheduler is the control plane and only invokes. Hacker News is the data input and is only read. Gemini is a dependency the job calls out to. Everything else is downstream.
+Three different kinds of thing touch the job, and they are not peers. Cloud Scheduler is the control plane and only invokes. Hacker News is the data input and is only read. The Gemini models are dependencies the job calls out to. Everything else is downstream.
+
+The models are reached two different ways. Every text agent runs on **gemini-3.7-flash through Vertex AI**, authenticated with the project's own credentials and billed to that project. The **text-to-speech** step is the exception. It calls **gemini-3.1-flash-tts-preview through the Gemini API** with an API key, because the multi-speaker preview voices are served there.
 
 ```mermaid
 flowchart TB
@@ -18,7 +20,7 @@ flowchart TB
   scheduler -.->|"invokes · daily 6:00 AM"| job
   hn -->|reads| job
 
-  subgraph job["Cloud Run job: hn-digest — ADK 2 graph, ~11 min, ~$2-3"]
+  subgraph job["Cloud Run job: hn-digest. ADK 2 graph, ~11 min, ~$2-3"]
     direction TB
     fetch["Fetch the last 26 hours<br/>(code)"] --> curate["Curate 7-10 stories<br/>(model)"]
     curate --> digest["digest ×N, one lane per story<br/>(model)"]
@@ -31,7 +33,8 @@ flowchart TB
     tts --> publish["Publish mp3 + RSS<br/>(code)"]
   end
 
-  job -->|calls| gemini["Gemini · Vertex AI<br/>gemini-3.7-flash · gemini-3.1-flash-tts-preview"]
+  job -->|"text agents"| vertex["Vertex AI<br/>gemini-3.7-flash"]
+  job -->|"voice"| gapi["Gemini API<br/>gemini-3.1-flash-tts-preview, multi-speaker"]
   job -->|"writes the episode"| gcs[("Cloud Storage · public bucket<br/>mp3 · feed.xml · script · claim ledger")]
   gcs -->|"RSS 2.0"| apps["Any podcast app<br/>(follow by URL)"]
 
