@@ -20,7 +20,6 @@ Ported from the public article repo for the All Things Agentic Hackathon submiss
 - `STORY_CHECK=1`: per-story digest fact-checking. Recommended, and the A/B winner
 - `DRY_RUN=1`: stop before TTS and publishing, for cheap logic tests
 - `ENABLE_TRACING=1`: export agent/tool/model spans to Cloud Trace (service account needs `roles/cloudtrace.agent`, then view at Console > Trace explorer)
-- `MODEL_PRO` / `MODEL_FLASH`: override the models. Both default to `gemini-3.7-flash`
 - `WINDOW_HOURS`: lookback window in hours, default 26
 
 ## Run it yourself, step by step
