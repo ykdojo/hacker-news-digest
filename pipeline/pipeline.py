@@ -581,7 +581,7 @@ def tts_chunk(client, chunk):
 LYRIA_MODEL = os.environ.get("LYRIA_MODEL", "lyria-002")
 LYRIA_LOCATION = os.environ.get("LYRIA_LOCATION", "us-central1")
 INTRO_SECONDS = float(os.environ.get("INTRO_SECONDS", "6"))
-INTRO_FADE_SECONDS = float(os.environ.get("INTRO_FADE_SECONDS", "2"))
+INTRO_FADE_SECONDS = float(os.environ.get("INTRO_FADE_SECONDS", "3"))
 INTRO_VOICE_OVERLAP = float(os.environ.get("INTRO_VOICE_OVERLAP", "2"))
 INTRO_FALLBACK_PROMPT = (
     "bright minimal electronic instrumental, gentle plucked synth melody over "
