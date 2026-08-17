@@ -176,6 +176,7 @@ const NODES = {
   check:   {x: 682, y: 70,  w: 104, t: "fact-check",   s: "claim fan-out"},
   router:  {x: 682, y: 200, w: 104, t: "review router", s: "deterministic"},
   cutter:  {x: 682, y: 300, w: 104, t: "cut segment",  s: "fallback", h: 38, dash: true},
+  lyria:   {x: 682, y: 366, w: 104, t: "intro theme",  s: "lyria"},
   tts:     {x: 542, y: 366, w: 104, t: "tts render",   s: "gemini tts"},
   publish: {x: 380, y: 366, w: 110, t: "publish",      s: "GCS · RSS feed"},
 };
@@ -187,7 +188,8 @@ const EDGES = [
   {f: "check", to: "router",  d: "M734,116 L734,196"},
   {f: "router", to: "cutter", d: "M734,246 L734,296", dash: true, label: "CUT", lx: 740, ly: 274},
   {f: "cutter", to: "check", d: "M786,317 C836,296 836,132 788,102", dash: true, label: "re-check", lx: 795, ly: 214},
-  {f: "router", to: "tts",    d: "M700,246 C660,300 620,330 600,362", label: "RENDER", lx: 596, ly: 316},
+  {f: "router", to: "lyria",  d: "M690,246 C662,290 662,330 690,362", label: "RENDER", lx: 636, ly: 304},
+  {f: "lyria", to: "tts",     d: "M678,389 L650,389"},
   {f: "tts", to: "publish",   d: "M538,389 L494,389"},
   {f: "router", to: "script", d: "M682,214 C630,190 606,160 596,120", label: "REWRITE ≤3", lx: 560, ly: 176, id: "rewrite"},
 ];

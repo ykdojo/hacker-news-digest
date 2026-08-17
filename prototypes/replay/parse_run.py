@@ -38,6 +38,7 @@ PATTERNS = {
     "rewrite": re.compile(r"review_router: (\d+) failed -> REWRITE #(\d+)"),
     "cut": re.compile(r"review_router: rewrite cap hit -> CUT #(\d+)"),
     "render": re.compile(r"review_router: all verified -> RENDER"),
+    "compose_done": re.compile(r"compose_intro: (\d+) bytes|compose_intro: (skipped|no music)"),
     "tts_seg": re.compile(r"tts segment (\d+)/(\d+) \((\d+) words\)"),
     "tts_done": re.compile(r"render_tts: (\d+)s episode, (\d+) segments"),
     "publish": re.compile(r"publish: (\S+)"),
@@ -151,9 +152,14 @@ def parse_lines(lines, stories=None):
             ev(log=text, set={"router": "rewrite", "cutter": "active"},
                stat={"rewrites": rewrites})
         elif PATTERNS["render"].search(text):
-            ev(log=text, set={"router": "done", "tts": "active"})
+            ev(log=text, set={"router": "done", "lyria": "active"})
+        elif PATTERNS["compose_done"].search(text):
+            ev(log=text, set={"lyria": "done"})
         elif m := PATTERNS["tts_seg"].search(text):
-            ev(log="  " + text, tts=int(m[1]))
+            # lyria done here too: pre-music logs jump straight from RENDER to
+            # the first tts segment and would otherwise leave the node active
+            ev(log="  " + text, tts=int(m[1]),
+               set={"lyria": "done", "tts": "active"})
         elif m := PATTERNS["tts_done"].search(text):
             dur = mmss(int(m[1]))
             ev(log=text, set={"tts": "done", "publish": "active"},
