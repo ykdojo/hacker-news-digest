@@ -13,6 +13,9 @@ Env:
   PUBLIC_BASE_URL       public URL prefix for the bucket (for RSS links)
   WINDOW_HOURS          lookback window (default 26)
   ENABLE_TRACING=1      export ADK's OpenTelemetry spans to Cloud Trace
+  SEGMENT_WORDS         target words per TTS segment (default 160, ~1 min)
+  SEAM_GAP_MS           silence between TTS segments (default 350)
+  INTRO_MUSIC=0         disable the Lyria intro theme (default on)
 """
 
 import asyncio
@@ -80,6 +83,7 @@ class Digest(BaseModel):
 class Line(BaseModel):
     speaker: str         # "Hacker" | "News"
     text: str
+    new_topic: bool = False   # first line of a new story/section
 
 
 class Script(BaseModel):
@@ -144,6 +148,8 @@ genuine back-and-forth discussion grounded in the digests, and the QUICK
 stories as brief mentions near the end. Close with a short sign-off.
 Tone: brisk, natural, a sports-broadcast feel; light humor welcome; no
 over-the-top enthusiasm. HARD LIMIT: at most {WORD_BUDGET} words total.
+Set new_topic=true on the first line of each story's discussion, on the first
+quick-mention line, and on the sign-off; leave it false everywhere else.
 If REWRITE FEEDBACK is present: prefer DELETING or neutrally softening each
 flagged claim over rephrasing it, keep every other line as close to unchanged
 as possible, and add NO new factual material anywhere in the script.
@@ -164,6 +170,19 @@ excerpt + comment threads). List every digest statement the sources do not
 support as written: wrong facts, merged commenters, overstated prevalence
 ("many users" when sources show one or two), or anything not present at all.
 ok=true only if every statement is supported.""")
+
+class MusicPrompt(BaseModel):
+    prompt: str
+
+
+music_director = Agent(
+    name="music_director", model=MODEL_FLASH, output_schema=MusicPrompt,
+    instruction="""Write a one-line music prompt for an instrumental intro theme
+for today's episode of a tech news podcast, matching the mood of the day's
+headlines (playful for fun launches, tense for breaches and outages, and so
+on). Describe genre, instruments, tempo, and mood in plain words. Instrumental
+only; never name artists, songs, or lyrics.""")
+
 
 checker = Agent(
     name="checker", model=MODEL_PRO, output_schema=Verdict,
@@ -499,32 +518,37 @@ def review_router(node_input: dict) -> Event:
 cutter = Agent(
     name="cutter", model=MODEL_FLASH, output_schema=Script,
     instruction="Remove or neutrally soften ONLY the listed failed claims from "
-                "this script. Change nothing else. Return the full edited script.")
+                "this script. Change nothing else. Return the full edited script, "
+                "preserving every line's speaker and new_topic values.")
 
 
 @node(rerun_on_resume=True)
 async def cut_failed(ctx: Context, node_input: dict) -> dict:
-    transcript = "\n".join(f"{l.speaker}: {l.text}" for l in node_input["script"].lines)
     script = await run_agent(
         ctx, cutter, f"FAILED CLAIMS:\n{json.dumps(node_input['failed'])}\n\n"
-                    f"SCRIPT:\n{transcript}", Script)
+                    f"SCRIPT (JSON):\n{node_input['script'].model_dump_json()}", Script)
     return {**node_input, "script": script, "cut_applied": True}
 
 
-SEGMENT_WORDS = int(os.environ.get("SEGMENT_WORDS", "260"))  # ~1.5-2 min
+SEGMENT_WORDS = int(os.environ.get("SEGMENT_WORDS", "160"))      # ~1 min
+SEGMENT_MIN_WORDS = int(os.environ.get("SEGMENT_MIN_WORDS", "90"))
+SEAM_GAP_MS = int(os.environ.get("SEAM_GAP_MS", "350"))
 
 
 def chunk_lines(lines):
-    """Split the script at speaker-turn boundaries into ~SEGMENT_WORDS chunks.
-    TTS quality degrades on outputs longer than a few minutes, so each chunk
-    renders separately and the PCM is concatenated."""
+    """Split the script at speaker-turn boundaries into ~SEGMENT_WORDS chunks,
+    starting a fresh chunk early where the script marks a new topic (so audio
+    segments line up with story boundaries). TTS quality degrades on outputs
+    longer than a few minutes, so each chunk renders separately and the PCM is
+    concatenated."""
     chunks, cur, words = [], [], 0
     for l in lines:
-        cur.append(l)
-        words += len(l.text.split())
-        if words >= SEGMENT_WORDS:
+        if cur and (words >= SEGMENT_WORDS
+                    or (l.new_topic and words >= SEGMENT_MIN_WORDS)):
             chunks.append(cur)
             cur, words = [], 0
+        cur.append(l)
+        words += len(l.text.split())
     if cur:
         chunks.append(cur)
     return chunks
@@ -551,9 +575,90 @@ def tts_chunk(client, chunk):
             raise
 
 
+# Lyria intro music. INTRO_MUSIC=0 disables; a Lyria failure never fails the
+# episode. Lyria's recitation check rejects some prompts outright, hence the
+# known-good fallback prompt.
+LYRIA_MODEL = os.environ.get("LYRIA_MODEL", "lyria-002")
+LYRIA_LOCATION = os.environ.get("LYRIA_LOCATION", "us-central1")
+INTRO_SECONDS = float(os.environ.get("INTRO_SECONDS", "5.5"))
+INTRO_FADE_SECONDS = float(os.environ.get("INTRO_FADE_SECONDS", "1.5"))
+INTRO_VOICE_OVERLAP = float(os.environ.get("INTRO_VOICE_OVERLAP", "1.5"))
+INTRO_FALLBACK_PROMPT = (
+    "bright minimal electronic instrumental, gentle plucked synth melody over "
+    "a soft four-on-the-floor beat, morning news show opener feel, 120 bpm")
+
+
+def lyria_generate(prompt):
+    import google.auth
+    import google.auth.transport.requests
+    creds, project = google.auth.default(
+        scopes=["https://www.googleapis.com/auth/cloud-platform"])
+    if not creds.valid:
+        creds.refresh(google.auth.transport.requests.Request())
+    r = requests.post(
+        f"https://{LYRIA_LOCATION}-aiplatform.googleapis.com/v1/projects/"
+        f"{project}/locations/{LYRIA_LOCATION}/publishers/google/models/"
+        f"{LYRIA_MODEL}:predict",
+        headers={"Authorization": f"Bearer {creds.token}"},
+        json={"instances": [{"prompt": prompt,
+                             "negative_prompt": "vocals, singing, lyrics"}],
+              "parameters": {"sample_count": 1}},
+        timeout=120)
+    r.raise_for_status()
+    return base64.b64decode(r.json()["predictions"][0]["bytesBase64Encoded"])
+
+
+@node(rerun_on_resume=True)
+async def compose_intro(ctx: Context, node_input: dict) -> dict:
+    if os.environ.get("DRY_RUN") == "1" or os.environ.get("INTRO_MUSIC", "1") != "1":
+        print("compose_intro: skipped")
+        return {**node_input, "intro_wav": None}
+    titles = "; ".join(node_input["by_id"][p.story_id]["title"]
+                       for p in node_input["picks"])
+    try:
+        mp = await run_agent(ctx, music_director,
+                             f"TODAY'S HEADLINES: {titles}", MusicPrompt)
+        prompts = [mp.prompt, INTRO_FALLBACK_PROMPT]
+    except Exception as e:
+        print(f"compose_intro: music_director failed ({str(e)[:120]}); "
+              "using fallback prompt")
+        prompts = [INTRO_FALLBACK_PROMPT]
+    for prompt in prompts:
+        try:
+            wav = await asyncio.to_thread(lyria_generate, prompt)
+        except Exception as e:
+            print(f"compose_intro: lyria rejected prompt ({str(e)[:120]})")
+            continue
+        os.makedirs("out", exist_ok=True)
+        with open("out/intro.wav", "wb") as f:
+            f.write(wav)
+        print(f"compose_intro: {len(wav)} bytes <- {prompt}")
+        return {**node_input, "intro_wav": "out/intro.wav", "intro_prompt": prompt}
+    print("compose_intro: no music this episode")
+    return {**node_input, "intro_wav": None}
+
+
+def mix_intro(intro_path, speech_path, out_path):
+    """Prepend the intro: music plays alone, fades out, and the hosts start
+    over the fade tail (voice enters at full level, no fade-in)."""
+    fade_start = INTRO_SECONDS - INTRO_FADE_SECONDS
+    voice_at_ms = int((INTRO_SECONDS - INTRO_VOICE_OVERLAP) * 1000)
+    subprocess.run(
+        ["ffmpeg", "-y", "-loglevel", "error",
+         "-i", intro_path, "-i", speech_path,
+         "-filter_complex",
+         f"[0:a]atrim=0:{INTRO_SECONDS},aresample=24000,"
+         f"pan=mono|c0=.5*c0+.5*c1,volume=0.8,"
+         f"afade=t=out:st={fade_start}:d={INTRO_FADE_SECONDS}[m];"
+         f"[1:a]adelay={voice_at_ms}:all=1[v];"
+         "[m][v]amix=inputs=2:duration=longest:normalize=0[out]",
+         "-map", "[out]", "-ar", "24000", "-ac", "1", out_path],
+        check=True)
+
+
 def render_transcript(lines):
     client = genai.Client(api_key=os.environ["GEMINI_API_KEY"], enterprise=False)
-    gap = b"\x00" * (int(24000 * 0.35) * 2)   # 350ms silence between segments
+    gap = b"\x00" * (int(24000 * SEAM_GAP_MS / 1000) * 2)   # silence between segments
     parts = []
     chunks = chunk_lines(lines)
     for i, chunk in enumerate(chunks):
@@ -576,9 +681,14 @@ def render_tts(node_input: dict) -> dict:
     with wave.open(wav_path, "wb") as wf:
         wf.setnchannels(1); wf.setsampwidth(2); wf.setframerate(24000)
         wf.writeframes(pcm)
+    if node_input.get("intro_wav"):
+        speech_path = f"out/{stamp}-speech.wav"
+        os.replace(wav_path, speech_path)
+        mix_intro(node_input["intro_wav"], speech_path, wav_path)
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", wav_path,
                     "-b:a", "128k", mp3_path], check=True)
-    dur = len(pcm) // (24000 * 2)
+    with wave.open(wav_path, "rb") as wf:
+        dur = wf.getnframes() // wf.getframerate()
     print(f"render_tts: {dur}s episode, {len(chunk_lines(node_input['script'].lines))} segments -> {mp3_path}")
     return {**node_input, "mp3": mp3_path, "duration_s": dur, "date": stamp}
 
@@ -671,8 +781,9 @@ workflow = Workflow(
          fact_check, review_router),
         (review_router, {"REWRITE": write_script,
                          "CUT": cut_failed,
-                         "RENDER": render_tts}),
+                         "RENDER": compose_intro}),
         (cut_failed, fact_check),
+        (compose_intro, render_tts),
         (render_tts, publish),
     ],
 )

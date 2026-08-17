@@ -62,7 +62,7 @@
     /* the column gap has to be wider than the widest edge label ("reads", "calls")
        or the label overhangs the boxes it sits between */
     grid-template-columns: 280px 1fr 280px;
-    column-gap: 76px; row-gap: 84px;
+    column-gap: 76px; row-gap: 60px;
     align-items: center;
   }
 
@@ -241,6 +241,8 @@
         <div class="stem"></div><div class="arrow"></div>
         <div class="node model" id="checknode"><div class="nlabel">Verify every claim</div><div class="tag">model</div></div>
         <div class="stem"></div><div class="arrow"></div>
+        <div class="node model"><div class="nlabel">Compose the intro theme</div><div class="tag">Lyria</div></div>
+        <div class="stem"></div><div class="arrow"></div>
         <div class="node model"><div class="nlabel">Render speech in segments</div><div class="tag">TTS</div></div>
         <div class="stem"></div><div class="arrow"></div>
         <div class="node code"><div class="nlabel">Publish mp3 + RSS</div><div class="tag">code</div></div>
@@ -256,8 +258,8 @@
     </div>
 
     <div class="box model" id="gemini" style="grid-column:3; grid-row:2;">
-      <div class="t">Gemini models</div>
-      <div class="s"><b style="color:rgba(255,255,255,0.72)">Vertex AI</b><br>gemini-3.7-flash, every text agent<br><br><b style="color:rgba(255,255,255,0.72)">Gemini API</b><br>gemini-3.1-flash-tts-preview, multi-speaker, for the two hosts</div>
+      <div class="t">Google AI models</div>
+      <div class="s"><b style="color:rgba(255,255,255,0.72)">Vertex AI</b><br>gemini-3.7-flash, every text agent<br><br><b style="color:rgba(255,255,255,0.72)">Vertex AI</b><br>lyria-002, an instrumental intro theme matching the day's headlines<br><br><b style="color:rgba(255,255,255,0.72)">Gemini API</b><br>gemini-3.1-flash-tts-preview, multi-speaker, for the two hosts</div>
     </div>
 
     <div class="box code" id="gcs" style="grid-column:2; grid-row:3; justify-self:center; min-width:560px; text-align:center;">
