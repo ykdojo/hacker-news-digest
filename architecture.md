@@ -10,7 +10,7 @@ The per-node agent graphs (7 diagrams) are in the [article](https://medium.com/g
 
 Three different kinds of thing touch the job, and they are not peers. Cloud Scheduler is the control plane and only invokes. Hacker News is the data input and is only read. The Gemini models are dependencies the job calls out to. Everything else is downstream.
 
-The models are reached two different ways. Every text agent runs on **gemini-3.7-flash through Vertex AI**, authenticated with the project's own credentials and billed to that project. The intro music also comes from Vertex AI: a `music_director` agent turns the day's headlines into a one-line music prompt, and **lyria-002** renders it as a ~30-second instrumental theme that gets faded under the hosts' opening lines. The **text-to-speech** step is the exception. It calls **gemini-3.1-flash-tts-preview through the Gemini API** with an API key, because the multi-speaker preview voices are served there.
+The models are reached two different ways. Every text agent runs on **gemini-3.7-flash through Vertex AI**, authenticated with the project's own credentials and billed to that project. The intro music also comes from Vertex AI. A `music_director` agent turns the day's headlines into a one-line music prompt, and **lyria-002** renders it as a short instrumental theme that gets faded under the hosts' opening lines. The **text-to-speech** step is the exception. It calls **gemini-3.1-flash-tts-preview through the Gemini API** with an API key, because the multi-speaker preview voices are served there.
 
 ```mermaid
 flowchart TB

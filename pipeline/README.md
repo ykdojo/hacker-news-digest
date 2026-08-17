@@ -21,9 +21,9 @@ Ported from the public article repo for the All Things Agentic Hackathon submiss
 - `DRY_RUN=1`: stop before TTS and publishing, for cheap logic tests
 - `ENABLE_TRACING=1`: export agent/tool/model spans to Cloud Trace (service account needs `roles/cloudtrace.agent`, then view at Console > Trace explorer)
 - `WINDOW_HOURS`: lookback window in hours, default 26
-- `SEGMENT_WORDS`: target words per TTS segment, default 160 (about a minute of speech); segments break only between speaker turns, and prefer to break where a new story starts
+- `SEGMENT_WORDS`: target words per TTS segment, default 160 (about a minute of speech). Segments break only between speaker turns, and prefer to break where a new story starts
 - `SEAM_GAP_MS`: silence inserted between TTS segments, default 350
-- `INTRO_MUSIC=0`: disable the Lyria-generated intro theme (on by default; a `music_director` agent writes a music prompt from the day's headlines, Lyria renders ~30s of instrumental audio, and ffmpeg fades it under the hosts' opening lines; any Lyria failure just skips the music)
+- `INTRO_MUSIC=0`: disable the Lyria-generated intro theme, which is on by default. A `music_director` agent writes a music prompt from the day's headlines, Lyria renders a short instrumental clip, and ffmpeg fades it under the hosts' opening lines. Any Lyria failure just skips the music
 
 ## Run it yourself, step by step
 
