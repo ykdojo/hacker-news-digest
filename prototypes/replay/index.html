@@ -469,16 +469,23 @@ restart(); renderMarks();
 
 // ---------- live mode ----------
 if (LIVE) {
-  $("#livebadge").style.display = "inline-block";
-  $("#subtitle").textContent = "live run · polling live.json";
+  const STALE_S = 10;   // tailer heartbeats every ~2s; older than this = not live
+  const setLive = on => {
+    $("#livebadge").style.display = on ? "inline-block" : "none";
+    $("#subtitle").textContent = on ? "live run · polling live.json"
+                                    : "waiting for live run · polling live.json";
+  };
+  setLive(false);
   DATA.stories = []; DATA.claims = []; DATA.events = [];
   buildLanes([]); restart(); renderMarks();
   let storyKey = JSON.stringify(DATA.stories);
   async function poll() {
     try {
       const r = await fetch("live.json?t=" + Date.now(), {cache: "no-store"});
+      if (!r.ok) setLive(false);
       if (r.ok) {
         const fresh = await r.json();
+        setLive(!!fresh.updated && Date.now() / 1000 - fresh.updated < STALE_S);
         const sk = JSON.stringify(fresh.stories);
         const had = DATA.events.length, at = idx;
         DATA.stories = fresh.stories; DATA.claims = fresh.claims;
@@ -496,7 +503,7 @@ if (LIVE) {
           renderTL();
         }
       }
-    } catch (e) { /* server not up yet */ }
+    } catch (e) { setLive(false); /* server not up yet */ }
     setTimeout(poll, 2000);
   }
   poll();

@@ -25,6 +25,7 @@ from parse_run import build
 
 def write_out(path, data):
     tmp = path + ".tmp"
+    data = dict(data, updated=time.time())
     with open(tmp, "w") as f:
         json.dump(data, f)
     os.replace(tmp, path)
@@ -76,13 +77,17 @@ def main():
     if not args.project:
         ap.error("--project required unless --simulate")
     print(f"tailing {args.job} in {args.project} since {args.since} -> {args.out}")
+    data = {"stories": [], "claims": [], "events": []}
     while True:
         try:
             fresh = gcloud_lines(args.project, args.job, args.since)
             if len(fresh) != len(lines):
                 lines = fresh
-                write_out(args.out, build(lines, ledger, titles))
+                data = build(lines, ledger, titles)
                 print(f"window now {len(lines)} lines")
+            # heartbeat even with no new lines, so the page can tell a
+            # running tailer from a leftover live.json
+            write_out(args.out, data)
         except subprocess.CalledProcessError as e:
             print(f"gcloud error (retrying): {e}")
         time.sleep(args.interval)
