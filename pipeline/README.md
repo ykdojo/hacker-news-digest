@@ -17,7 +17,7 @@ Ported from the public article repo for the All Things Agentic Hackathon submiss
 - `GOOGLE_GENAI_USE_ENTERPRISE=TRUE` plus application default credentials: for the text models, billed to your Cloud project
 - `GOOGLE_CLOUD_LOCATION=global`
 - `PUBLISH_BUCKET`: Cloud Storage bucket name. Unset writes to `./out` locally
-- `STORY_CHECK=1`: per-story digest fact-checking. Recommended, and the A/B winner
+- `STORY_CHECK=1`: per-story digest fact-checking. Recommended; it beat script-level-only checking in testing
 - `DRY_RUN=1`: stop before TTS and publishing, for cheap logic tests
 - `ENABLE_TRACING=1`: export agent/tool/model spans to Cloud Trace (service account needs `roles/cloudtrace.agent`, then view at Console > Trace explorer)
 - `WINDOW_HOURS`: lookback window in hours, default 26
