@@ -1,8 +1,8 @@
 # Hacker News Digest
 
-A daily podcast written, fact-checked, and published entirely by agents on Google Cloud.
+A system of agents on Google Cloud that writes, fact-checks, and publishes a daily podcast.
 
-Every morning at 6 AM Pacific, a Cloud Run job reads the last 26 hours of Hacker News and picks the stories worth talking about. It digests and fact-checks each story against the actual linked articles and comment threads, then writes a two-host script and verifies it claim by claim. Lyria composes an intro theme to match the day's headlines, multi-speaker Gemini TTS renders the audio, and the job publishes an mp3 plus an RSS feed to a public bucket. Paste the feed URL into any podcast app and it is a real show. No human is involved at any step.
+Every morning at 6 AM Pacific, a Cloud Run job reads the last 26 hours of Hacker News and picks the stories worth talking about. It digests and fact-checks each story against the actual linked articles and comment threads, then writes a two-host script and verifies it again, claim by claim. Lyria composes an intro theme to match the day's headlines, multi-speaker Gemini TTS renders the audio, and the job publishes an mp3 plus an RSS feed to a public bucket. Paste the feed URL into any podcast app and it is a real show.
 
 - **Listen / demo page**: https://ykdojo.github.io/awesome-agents-on-google-cloud/hn-podcast-demo/
 - **Write-up**: [Turning Hacker News into a daily podcast with ADK 2, Gemini TTS, and Cloud Run jobs](https://medium.com/google-cloud/turning-hacker-news-into-a-daily-podcast-with-adk-2-gemini-tts-and-cloud-run-jobs-02c2d53fdcf2)
