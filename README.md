@@ -6,7 +6,7 @@ Every morning at 6 AM Pacific, a Cloud Run job reads the last 26 hours of Hacker
 
 - **Listen / demo page**: https://ykdojo.github.io/awesome-agents-on-google-cloud/hn-podcast-demo/
 - **Write-up**: [Turning Hacker News into a daily podcast with ADK 2, Gemini TTS, and Cloud Run jobs](https://medium.com/google-cloud/turning-hacker-news-into-a-daily-podcast-with-adk-2-gemini-tts-and-cloud-run-jobs-02c2d53fdcf2)
-- **Demo video (4 min)**: [watch the whole system run, live](https://www.youtube.com/watch?v=KDKNnr_98us)
+- **Demo video**: https://www.youtube.com/watch?v=KDKNnr_98us
 
 Built for the [All Things Agentic Hackathon](https://allthingsagentichackathon.devpost.com/) (category: Taskmaster).
 
