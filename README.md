@@ -2,7 +2,7 @@
 
 A system that generates a daily podcast summarizing Hacker News, with fact-checking loops to ensure accuracy.
 
-Every morning at 6 AM Pacific, a Cloud Run job reads the last 26 hours of Hacker News and picks the stories worth talking about. It digests and fact-checks each story against the linked articles and comment threads, then writes a two-host script. Lyria composes an intro theme to match the day's headlines, multi-speaker Gemini TTS generates the audio, and the job publishes the episode to a public RSS feed you can follow in any podcast app.
+Every morning at 6 AM Pacific, a Cloud Run job reads the last 26 hours of Hacker News and picks the stories worth talking about. It digests and fact-checks each story against the linked articles and comment threads, then writes a two-host script. Lyria composes an intro theme to match the day's headlines, multi-speaker Gemini TTS generates the audio, and the job publishes the episode to a public RSS feed you can follow in any podcast app. A post-production job then has Gemma write the episode's shownotes and Veo render per-story ambient backdrops for a video edition.
 
 - **Listen / demo page**: https://ykdojo.github.io/awesome-agents-on-google-cloud/hn-podcast-demo/
 - **Write-up**: [Turning Hacker News into a daily podcast with ADK 2, Gemini TTS, and Cloud Run jobs](https://medium.com/google-cloud/turning-hacker-news-into-a-daily-podcast-with-adk-2-gemini-tts-and-cloud-run-jobs-02c2d53fdcf2)
@@ -18,7 +18,11 @@ Deterministic code owns the graph structure, fetching, scoring, the claim ledger
 
 Verification runs at two levels: each story digest gets its own fact-check lane with up to 2 repair rounds, and the finished script goes through a claim-by-claim check with a rewrite loop. A segment that still fails verification is cut rather than aired, and every episode publishes its claim ledger next to the audio so any line of the show traces back to a verified claim.
 
-Stack: **Google ADK 2** (graph workflow with dynamic per-story fan-out), **Gemini 3.7 Flash** through Vertex AI for all text agents, **Lyria** through Vertex AI for a daily instrumental intro theme, **multi-speaker Gemini TTS** through the Gemini API for the two hosts, **Cloud Run jobs** + **Cloud Scheduler**, **Cloud Storage**, **Cloud Logging** + **Cloud Trace** (OpenTelemetry spans for every agent, tool, and model call). More detail in [architecture.md](architecture.md).
+Stack: **Google ADK 2** (graph workflow with dynamic per-story fan-out), **Gemini 3.7 Flash** through Vertex AI for all text agents, **Lyria** through Vertex AI for a daily instrumental intro theme, **multi-speaker Gemini TTS** through the Gemini API for the two hosts, **Gemma** through the Gemini API for shownotes and visual directions, **Veo** through Vertex AI for the video edition's backdrops, **Cloud Run jobs** + **Cloud Scheduler**, **Cloud Storage**, **Secret Manager**, **Cloud Logging** + **Cloud Trace** (OpenTelemetry spans for every agent, tool, and model call). Both jobs run on dedicated least-privilege service accounts. More detail in [architecture.md](architecture.md).
+
+### Post-production job
+
+[shownotes/](shownotes/) is a second, deliberately tiny Cloud Run job scheduled after the audio pipeline. It reads the day's published script, has **Gemma** write the listener-facing episode description into the RSS feed, maps each story's start time from the audio (Gemini audio understanding, snapped to the silences the pipeline inserts between segments), has Gemma write a per-story visual direction, renders an 8-second ambient backdrop per story with **Veo**, and stitches them under the episode audio into `episodes/DATE-video.mp4`. Any failure leaves the feed exactly as the pipeline published it.
 
 ## Run it yourself, step by step
 
@@ -138,6 +142,7 @@ The moment that matters, from a live-tailed run. The fact-check found 2 bad clai
 | Path | What it is |
 |---|---|
 | [pipeline/](pipeline/) | the entire pipeline + file map |
+| [shownotes/](shownotes/) | post-production job: Gemma shownotes + Veo video edition |
 | [prototypes/replay/](prototypes/replay/) | mission replay page (recorded + live) |
 | [architecture.md](architecture.md) | system architecture, diagram + text |
 | [assets/](assets/) | diagram + cover sources and render scripts |

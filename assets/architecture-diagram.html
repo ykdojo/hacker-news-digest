@@ -62,7 +62,7 @@
     /* the column gap has to be wider than the widest edge label ("reads", "calls")
        or the label overhangs the boxes it sits between */
     grid-template-columns: 280px 1fr 280px;
-    column-gap: 76px; row-gap: 60px;
+    column-gap: 76px; row-gap: 40px;
     align-items: center;
   }
 
@@ -168,7 +168,7 @@
 
   <div class="head">
     <h1>Hacker News Digest &nbsp;<span class="hl">system architecture</span></h1>
-    <p>One scheduled Cloud Run job.</p>
+    <p>Two scheduled Cloud Run jobs, each on its own least-privilege identity.</p>
   </div>
 
   <svg id="wires"></svg>
@@ -259,12 +259,17 @@
 
     <div class="box model" id="gemini" style="grid-column:3; grid-row:2;">
       <div class="t">Google AI models</div>
-      <div class="s"><b style="color:rgba(255,255,255,0.72)">Vertex AI</b><br>gemini-3.7-flash, every text agent<br><br><b style="color:rgba(255,255,255,0.72)">Vertex AI</b><br>lyria-002, an instrumental intro theme matching the day's headlines<br><br><b style="color:rgba(255,255,255,0.72)">Gemini API</b><br>gemini-3.1-flash-tts-preview, multi-speaker, for the two hosts</div>
+      <div class="s"><b style="color:rgba(255,255,255,0.72)">Vertex AI</b><br>gemini-3.7-flash, every text agent<br><br><b style="color:rgba(255,255,255,0.72)">Vertex AI</b><br>lyria-002, the daily instrumental intro theme<br><br><b style="color:rgba(255,255,255,0.72)">Gemini API</b><br>gemini-3.1-flash-tts-preview, multi-speaker, for the two hosts<br><br><b style="color:rgba(255,255,255,0.72)">Gemini API</b><br>gemma-4-31b-it, shownotes and visual directions<br><br><b style="color:rgba(255,255,255,0.72)">Vertex AI</b><br>veo-3.1-fast, per-story ambient backdrops</div>
+    </div>
+
+    <div class="box" id="companion" style="grid-column:1; grid-row:3;">
+      <div class="t">Post-production job &middot; hn-shownotes</div>
+      <div class="s"><span style="color:#a8c1ff">scheduled daily 6:45 AM, after the audio pipeline</span><br>Gemma writes the shownotes and visual directions, Gemini maps story timestamps, Veo renders per-story backdrops, code stitches the video edition</div>
     </div>
 
     <div class="box code" id="gcs" style="grid-column:2; grid-row:3; justify-self:center; min-width:560px; text-align:center;">
       <div class="t">Cloud Storage &middot; public bucket</div>
-      <div class="s">mp3 &nbsp;·&nbsp; feed.xml &nbsp;·&nbsp; script &nbsp;·&nbsp; per-episode claim ledger</div>
+      <div class="s">mp3 &nbsp;·&nbsp; feed.xml &nbsp;·&nbsp; script &nbsp;·&nbsp; video edition</div>
     </div>
     <div class="box ext" id="apps" style="grid-column:2; grid-row:4; justify-self:center; min-width:360px; text-align:center;">
       <div class="t">Any podcast app</div>
@@ -380,6 +385,7 @@
   }
 
   wire('sched', 'bottom', 'job', 'top', 'invokes &nbsp;·&nbsp; daily 6:00 AM', { ctrl: true, dashed: true });
+  wire('companion', 'right', 'gcs', 'left', 'reads &nbsp;·&nbsp; writes', { alignY: 'companion' });
   // straight horizontal runs at the external box's centre height
   wire('hn', 'right', 'job', 'left', 'reads', { alignY: 'hn' });
   wire('job', 'right', 'gemini', 'left', 'calls', { alignY: 'gemini' });
