@@ -12,7 +12,7 @@ Three different kinds of thing touch the job, and they are not peers. Cloud Sche
 
 The models are reached two different ways. Every text agent runs on **gemini-3.7-flash through Vertex AI**, authenticated with the project's own credentials and billed to that project. The intro music also comes from Vertex AI. A `music_director` agent turns the day's headlines into a one-line music prompt, and **lyria-002** renders it as a short instrumental theme that gets faded under the hosts' opening lines. The **text-to-speech** step is the exception. It calls **gemini-3.1-flash-tts-preview through the Gemini API** with an API key, because the multi-speaker preview voices are served there.
 
-A second, deliberately tiny **post-production job** (`hn-shownotes`, [shownotes/](shownotes/)) runs after the audio pipeline and never touches it. It reads the published script, has **Gemma** (gemma-4-31b-it through the Gemini API) write the listener-facing episode description into the feed plus a per-story Veo prompt, maps each story's start time from the audio (Gemini audio understanding, snapped to the silences the pipeline inserts between TTS segments), renders an 8-second ambient backdrop per story with **Veo** (veo-3.1-fast through Vertex AI), and stitches them under the episode audio into a video edition. Any failure leaves the feed exactly as the pipeline published it.
+A second, deliberately tiny **post-production job** (`hn-shownotes`, [shownotes/](shownotes/)) runs after the audio pipeline and never touches it. It reads the published script, has **Gemma** (gemma-4-31b-it through the Gemini API) write the listener-facing episode description into the feed, maps each story's start time from the audio (Gemini audio understanding, snapped to the silences the pipeline inserts between TTS segments), has Gemma write a Veo prompt per story, renders an 8-second ambient backdrop per story with **Veo** (veo-3.1-fast through Vertex AI), and stitches them under the episode audio into a video edition. Any failure leaves the feed exactly as the pipeline published it.
 
 Both jobs run on dedicated least-privilege service accounts (Vertex AI user, bucket-scoped storage, log writer, and nothing else), and the Gemini API key is mounted from Secret Manager rather than stored in plain env vars.
 
@@ -44,7 +44,7 @@ flowchart TB
   job -->|"writes the episode"| gcs[("Cloud Storage · public bucket<br/>mp3 · feed.xml · script · claim ledger · video edition")]
   gcs -->|"RSS 2.0"| apps["Any podcast app<br/>(follow by URL)"]
 
-  scheduler -.->|"invokes · daily 6:45"| post["Post-production job: hn-shownotes<br/>Gemma shownotes + Veo prompts ·<br/>Gemini story timestamps · Veo backdrops · ffmpeg stitch"]
+  scheduler -.->|"invokes · daily 6:45"| post["Post-production job: hn-shownotes<br/>Gemma shownotes · Gemini story timestamps ·<br/>Gemma Veo prompts · Veo backdrops · ffmpeg stitch"]
   post <-->|"reads the episode, writes shownotes + video"| gcs
 
   job -.->|"stdout · OTel spans"| obs["Cloud Logging · Cloud Trace"]
