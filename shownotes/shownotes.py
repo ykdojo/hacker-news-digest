@@ -55,9 +55,10 @@ ET.register_namespace("itunes", "http://www.itunes.com/dtds/podcast-1.0.dtd")
 NOTES_PROMPT = """You write podcast shownotes. Below is the full script of today's
 episode of "Hacker News Digest", a two-host daily podcast that summarizes
 Hacker News. Write the episode description: 2-3 sentences, plain text, no
-markdown, no hashtags, no emoji. Hook the listener with the most interesting
-one or two stories, then convey the breadth of the rest. Do not invent
-anything that is not in the script. Do not mention the hosts' names.
+markdown, no hashtags, no emoji. Lead with the main stories - the ones the
+script spends the most time on - naming them specifically, then convey the
+breadth of the quick stories. Do not invent anything that is not in the
+script. Do not mention the hosts' names.
 
 SCRIPT:
 {script}
