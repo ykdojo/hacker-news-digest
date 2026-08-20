@@ -75,19 +75,23 @@ SCRIPT:
 """
 
 MANNEQUIN_STYLE = (
-    "Photorealistic 3D render of shop-window display mannequins: completely smooth, "
-    "blank, featureless heads with NO eyes, NO eyebrows, NO nose, NO mouth, NO hair, "
-    "NO ears, NO facial features of any kind. Head surfaces are matte porcelain-white "
-    "or light grey artificial material, absolutely not human skin. Tailored clothing. "
-    "Soft cinematic studio lighting, shallow depth of field, muted color grade with one "
-    "accent color, slow camera drift, no text, no logos. Every single figure in the "
-    "scene, foreground and background, is such a faceless mannequin.")
+    "Photorealistic 3D render of living, animated mannequin people: completely smooth, "
+    "blank, featureless heads with NO eyes, NO eyebrows, NO nose, NO mouth, NO lips, "
+    "NO hair, NO ears, NO facial features of any kind - perfectly smooth blank ovals. "
+    "Head surfaces are matte porcelain-white or light grey artificial material, "
+    "absolutely not human skin. Tailored clothing. The mannequins are alive and move "
+    "naturally like people: walking, turning, gesturing, handling objects as they act "
+    "out the scene. Soft cinematic studio lighting, shallow depth of field, muted "
+    "color grade with one accent color, gentle camera movement, no text, no logos. "
+    "Every single figure in the scene, foreground and background, is such a faceless "
+    "living mannequin.")
 
-INTRO_SCENE = ("Two faceless mannequin podcast hosts at a sleek desk with studio microphones: one "
-               "with a feminine silhouette in a tailored suit, one with a masculine "
-               "silhouette in a suit, hands gesturing over the desk in a cozy news studio "
-               "at sunrise. Their heads are perfectly smooth blank ovals with absolutely "
-               "no mouth, no lips, and no facial features. Accent color: warm amber.")
+INTRO_SCENE = ("Two faceless mannequin podcast hosts seated at a news desk with studio "
+               "microphones: one with a feminine silhouette in a tailored suit, one with "
+               "a masculine silhouette in a suit, seated side by side, hands gesturing "
+               "animatedly over the desk in a cozy news studio at sunrise. Their heads "
+               "are perfectly smooth blank ovals with absolutely no mouth, no lips, and "
+               "no facial features. Accent color: warm amber.")
 
 STORY_VISUALS_PROMPT = """Below is a numbered list of today's stories on a
 technology news podcast. For EACH story write ONE line (under 40 words)
