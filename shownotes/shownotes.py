@@ -110,6 +110,24 @@ STORIES:
 """
 
 
+def parse_numbered(text, n):
+    """Parse 'N. <item>' lists; tolerates everything on one line by splitting
+    on sequential inline numbers (so '6.1' inside an item never false-splits)."""
+    lines = [re.sub(r"^\s*\d+\.\s*", "", l).strip()
+             for l in text.splitlines() if re.match(r"\s*\d+\.\s", l)]
+    if len(lines) == n:
+        return lines
+    parts = re.split(r"(?:^|(?<=\s))(\d+)\.\s+", text.strip())
+    items = []
+    for i in range(1, len(parts) - 1, 2):
+        num, body = int(parts[i]), parts[i + 1].strip()
+        if num == len(items) + 1:
+            items.append(body)
+        elif items:
+            items[-1] = f"{items[-1]} {num}. {body}"
+    return items if len(items) == n else lines
+
+
 def gemma(client, prompt):
     text = client.models.generate_content(model=GEMMA_MODEL, contents=prompt).text
     return re.sub(r"\s+", " ", text.strip())
@@ -268,8 +286,7 @@ def make_video(bucket, client, script, stories):
             text = gemma(client, STORY_VISUALS_PROMPT.format(
                 n=len(stories), stories="\n".join(
                     f"{i+1}. {s}" for i, s in enumerate(stories))))
-            themes = [re.sub(r"^\s*\d+\.\s*", "", l).strip()
-                      for l in text.splitlines() if re.match(r"\s*\d+\.\s", l)]
+            themes = parse_numbered(text, len(stories))
             if len(themes) != len(stories):
                 raise ValueError(f"{len(themes)} themes for {len(stories)} stories")
             themes = [INTRO_SCENE] + themes
