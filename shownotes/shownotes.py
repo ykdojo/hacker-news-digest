@@ -237,7 +237,7 @@ def make_video(bucket, client, script, stories):
                 n=len(stories), stories="\n".join(
                     f"{i+1}. {s}" for i, s in enumerate(stories))))
             directions = [re.sub(r"^\s*\d+\.\s*", "", l).strip()
-                          for l in re.split(r"(?=\d+\.\s)", text) if l.strip()]
+                          for l in text.splitlines() if re.match(r"\s*\d+\.\s", l)]
             if len(directions) != len(stories):
                 raise ValueError(f"{len(directions)} directions for {len(stories)} stories")
             for d in directions:
