@@ -170,8 +170,12 @@ def veo_generate(prompts):
     quota is per base model), backing off on 429s. Returns bytes per prompt."""
     from google.genai import types
     vertex = vertex_client()
-    cfg = types.GenerateVideosConfig(duration_seconds=8, aspect_ratio="16:9",
-                                     number_of_videos=1, generate_audio=False)
+    cfg = types.GenerateVideosConfig(
+        duration_seconds=8, aspect_ratio="16:9", number_of_videos=1,
+        generate_audio=False,
+        negative_prompt="face, eyes, eyebrows, nose, mouth, lips, teeth, hair, "
+                        "ears, facial features, human skin, realistic person, "
+                        "crowd, text, logos")
     limit = int(os.environ.get("VEO_CONCURRENCY", "2"))
     pending = list(enumerate(prompts))
     active, clips, throttles = {}, [None] * len(prompts), 0
