@@ -3,8 +3,8 @@
 Optional second Cloud Run job ([shownotes.py](shownotes.py)): Gemma writes each
 episode's description into the RSS feed; with `VIDEO=1` it also produces the
 video edition (Gemini maps story timestamps from the audio, Gemma writes a Veo
-prompt per story, Veo renders unique 8-second backdrops, ffmpeg stitches them
-under the audio; no footage ever repeats). Any failure leaves the feed exactly
+prompt per story, Veo renders 8-second backdrops, ffmpeg stitches them
+under the audio). Any failure leaves the feed exactly
 as the pipeline published it. See the [main README](../README.md) for what it
 does and the [architecture notes](../architecture.md) for how it fits.
 

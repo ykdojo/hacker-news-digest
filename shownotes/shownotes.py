@@ -11,7 +11,7 @@ Two steps, both driven by the day's published script:
    <description> in feed.xml.
 2. Video edition (Veo, opt-in, OFF by default - set VIDEO=1): Gemini maps
    story timestamps from the audio, Gemma writes a mannequin-style Veo scene
-   per story, Veo renders unique 8s backdrops (no footage repeats), and
+   per story, Veo renders 8s backdrops per story, and
    ffmpeg stitches them under the audio into episodes/DATE-video.mp4.
    Skipped if the video already exists (idempotent). Veo dominates the cost;
    the shownotes step alone costs pennies.
@@ -230,8 +230,8 @@ def story_timestamps(audio_path, stories, duration):
 
 
 def assemble(tmp, clips, plan, boundaries, duration, audio, out):
-    """Encode each sub-clip slowed 2x across its time range (no footage ever
-    repeats), fade between them, concatenate, and mux the episode audio."""
+    """Encode each sub-clip slowed 2x across its time range, fade between
+    them, concatenate, and mux the episode audio."""
     from concurrent.futures import ThreadPoolExecutor
     ends = boundaries[1:] + [duration]
     jobs, idx = [], 0
