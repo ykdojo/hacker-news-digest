@@ -7,43 +7,62 @@
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { font-family: 'Inter', -apple-system, sans-serif; }
-  .cover { position: relative; overflow: hidden; width: 1600px; height: 470px;
+  .cover { position: relative; overflow: hidden; width: 1600px; height: 1010px;
     background: linear-gradient(100deg, #0f3552 0%, #12424d 55%, #1a4a3a 100%); padding: 44px 60px; }
-  .head h1 { font-size: 30px; font-weight: 700; color: #fff; }
+  .head h1 { font-size: 32px; font-weight: 700; color: #fff; }
   .head h1 .hl { color: #ff9a3c; }
-  .head p { font-size: 17px; font-weight: 500; color: rgba(255,255,255,0.45); margin-top: 6px; }
-  .flow { display: flex; align-items: stretch; gap: 0; margin-top: 36px; }
-  .box { background: rgba(255,255,255,0.05); border: 1.5px solid rgba(255,255,255,0.14);
-    border-radius: 14px; padding: 16px 18px; width: 252px; }
-  .box .t { font-size: 18px; font-weight: 600; color: rgba(255,255,255,0.92); line-height: 1.3; }
-  .box .s { font-size: 13.5px; font-weight: 500; color: rgba(255,255,255,0.45); margin-top: 6px; line-height: 1.4; }
-  .box.code { border-color: rgba(120,160,255,0.45); }
-  .box.model { border-color: rgba(255,154,60,0.45); }
-  .box .tag { font-weight: 700; font-size: 12px; letter-spacing: 0.03em; margin-top: 8px; display: block; }
-  .box.model .tag { color: #ffb86e; } .box.code .tag { color: #a8c1ff; }
-  .arrow { align-self: center; width: 34px; text-align: center; color: rgba(255,255,255,0.4); font-size: 22px; }
-  .note { margin-top: 30px; font-size: 15px; font-weight: 500; color: rgba(255,255,255,0.55); }
-  .note b { color: #ffb86e; font-weight: 600; }
+  .head p { font-size: 18px; font-weight: 500; color: rgba(255,255,255,0.5); margin-top: 6px; }
+  .tl { margin-top: 30px; }
+  .tl .cap { font-size: 15px; font-weight: 600; color: rgba(255,255,255,0.65); margin-bottom: 10px; }
+  .bar { display: flex; height: 54px; border-radius: 10px; overflow: hidden;
+    border: 1.5px solid rgba(255,255,255,0.25); }
+  .seg { position: relative; border-right: 2px solid rgba(255,154,60,0.85); background: rgba(120,160,255,0.10); }
+  .seg:nth-child(odd) { background: rgba(120,160,255,0.20); }
+  .seg:last-child { border-right: none; }
+  .seg span { position: absolute; top: 6px; left: 0; right: 0; text-align: center;
+    font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.85); }
+  .ticks { position: absolute; bottom: 0; left: 0; right: 0; height: 18px; display: flex; }
+  .ticks i { border-right: 1px solid rgba(255,255,255,0.3); height: 100%; }
+  .ticks i:last-child { border-right: none; }
+  .legend { display: flex; gap: 26px; font-size: 13.5px; font-weight: 500; color: rgba(255,255,255,0.5); margin-top: 8px; }
+  .legend b { color: rgba(255,154,60,0.9); font-weight: 600; } .legend u { color: rgba(255,255,255,0.75); text-decoration: none; font-weight: 600; }
+  .flow { width: 900px; margin: 34px auto 0; display: flex; flex-direction: column; align-items: stretch; }
+  .node { background: rgba(255,255,255,0.05); border: 1.5px solid rgba(255,154,60,0.45);
+    border-radius: 14px; padding: 16px 22px; }
+  .node.code { border-color: rgba(120,160,255,0.45); }
+  .node .t { font-size: 20px; font-weight: 700; color: rgba(255,255,255,0.95); }
+  .node .t em { font-style: normal; color: #ffb86e; font-weight: 700; font-size: 16px; margin-left: 10px; }
+  .node.code .t em { color: #a8c1ff; }
+  .node .s { font-size: 15.5px; font-weight: 500; color: rgba(255,255,255,0.55); margin-top: 6px; line-height: 1.5; }
+  .arrow { align-self: center; width: 0; height: 0; border-left: 9px solid transparent;
+    border-right: 9px solid transparent; border-top: 12px solid rgba(255,255,255,0.35); }
+  .stem { align-self: center; width: 3px; background: rgba(255,255,255,0.35); height: 10px; }
 </style>
 </head>
 <body>
 <div class="cover">
   <div class="head">
-    <h1>Inside the <span class="hl">video edition</span></h1>
-    <p>How the post-production job turns one episode into per-story visuals that follow the audio.</p>
+    <h1>Video generation <span class="hl">mechanics</span></h1>
+    <p>How the post-production job turns one episode of audio into visuals that follow along.</p>
+  </div>
+  <div class="tl">
+    <div class="cap">The episode's timeline. Story start times are read from the audio itself, and each story is divided into ~16-second windows:</div>
+    <div class="bar"><div class="seg" style="width:2.312%"><span>intro</span><div class="ticks"><i style="width:100.000%"></i></div></div><div class="seg" style="width:15.546%"><span>story 1</span><div class="ticks"><i style="width:16.667%"></i><i style="width:16.667%"></i><i style="width:16.667%"></i><i style="width:16.667%"></i><i style="width:16.667%"></i><i style="width:16.667%"></i></div></div><div class="seg" style="width:14.775%"><span>story 2</span><div class="ticks"><i style="width:20.000%"></i><i style="width:20.000%"></i><i style="width:20.000%"></i><i style="width:20.000%"></i><i style="width:20.000%"></i></div></div><div class="seg" style="width:16.470%"><span>story 3</span><div class="ticks"><i style="width:16.667%"></i><i style="width:16.667%"></i><i style="width:16.667%"></i><i style="width:16.667%"></i><i style="width:16.667%"></i><i style="width:16.667%"></i></div></div><div class="seg" style="width:14.120%"><span>story 4</span><div class="ticks"><i style="width:20.000%"></i><i style="width:20.000%"></i><i style="width:20.000%"></i><i style="width:20.000%"></i><i style="width:20.000%"></i></div></div><div class="seg" style="width:6.261%"><span>story 5</span><div class="ticks"><i style="width:33.333%"></i><i style="width:33.333%"></i><i style="width:33.333%"></i></div></div><div class="seg" style="width:6.222%"><span>story 6</span><div class="ticks"><i style="width:33.333%"></i><i style="width:33.333%"></i><i style="width:33.333%"></i></div></div><div class="seg" style="width:5.798%"><span>story 7</span><div class="ticks"><i style="width:50.000%"></i><i style="width:50.000%"></i></div></div><div class="seg" style="width:5.837%"><span>story 8</span><div class="ticks"><i style="width:50.000%"></i><i style="width:50.000%"></i></div></div><div class="seg" style="width:6.665%"><span>story 9</span><div class="ticks"><i style="width:33.333%"></i><i style="width:33.333%"></i><i style="width:33.333%"></i></div></div><div class="seg" style="width:5.995%"><span>story 10</span><div class="ticks"><i style="width:50.000%"></i><i style="width:50.000%"></i></div></div></div>
+    <div class="legend"><span><b>orange lines</b> - where a new story starts (the scene changes here)</span><span><u>small ticks</u> - the ~16-second windows (one video clip each)</span></div>
   </div>
   <div class="flow">
-    <div class="box code"><div class="t">Story timeline</div><div class="s">story start times from the audio, snapped to the pipeline's segment gaps; split into ~16s windows</div><span class="tag">gemini + code</span></div>
-    <div class="arrow">&#8594;</div>
-    <div class="box model"><div class="t">What is said, per window</div><div class="s">Gemini listens to the episode and writes one clause per 16-second window</div><span class="tag">gemini-3.7-flash</span></div>
-    <div class="arrow">&#8594;</div>
-    <div class="box model"><div class="t">Scene + beats</div><div class="s">Gemma writes one scene per story, then a beat per window that keeps the scene while following the dialogue</div><span class="tag">gemma-4-31b-it</span></div>
-    <div class="arrow">&#8594;</div>
-    <div class="box model"><div class="t">One clip per window</div><div class="s">house style + story scene + that window's beat; every second of footage unique</div><span class="tag">veo-3.1-fast</span></div>
-    <div class="arrow">&#8594;</div>
-    <div class="box code"><div class="t">Assemble</div><div class="s">slow 2&times;, fade, cut on story boundaries, mux the episode audio</div><span class="tag">code &middot; ffmpeg</span></div>
+    <div class="node"><div class="t">Listen to the episode <em>gemini-3.7-flash</em></div>
+      <div class="s">The model listens to the actual audio and writes one plain sentence per window: what the hosts are talking about during those 16 seconds.</div></div>
+    <div class="stem"></div><div class="arrow"></div>
+    <div class="node"><div class="t">Design one scene per story, then an action per window <em>gemma-4-31b-it</em></div>
+      <div class="s">Gemma invents a single scene for each story - the place, the mannequin figure, the props, one accent color. Then, for every window inside that story, it writes what the mannequin is doing at that moment, based on what the hosts are saying right then. Same scene throughout a story; the action follows the conversation.</div></div>
+    <div class="stem"></div><div class="arrow"></div>
+    <div class="node"><div class="t">Render one clip per window <em>veo-3.1-fast</em></div>
+      <div class="s">Each window's description becomes its own unique 8-second video clip. All clips share one look: smooth, faceless mannequin figures (no eyes, no mouth, no hair) in photorealistic scenes.</div></div>
+    <div class="stem"></div><div class="arrow"></div>
+    <div class="node code"><div class="t">Assemble the video <em>code &middot; ffmpeg</em></div>
+      <div class="s">Each 8-second clip is slowed down to cover its full 16-second window. Clips fade into one another, the scene changes exactly when the hosts move to a new story, and the episode audio is laid on top.</div></div>
   </div>
-  <div class="note">Every prompt = <b>house style</b> (faceless living mannequins) + <b>story scene</b> + <b>this window's beat</b>. A failure at any step falls back gracefully; the feed is never touched.</div>
 </div>
 </body>
 </html>
