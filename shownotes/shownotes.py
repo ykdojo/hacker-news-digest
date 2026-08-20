@@ -88,12 +88,12 @@ MANNEQUIN_STYLE = (
     "Every single figure in the scene, foreground and background, is such a faceless "
     "living mannequin.")
 
-INTRO_SCENE = ("Two faceless mannequin podcast hosts seated at a news desk with studio "
-               "microphones: one with a feminine silhouette in a tailored suit, one with "
-               "a masculine silhouette in a suit, seated side by side, hands gesturing "
-               "animatedly over the desk in a cozy news studio at sunrise. Their heads "
-               "are perfectly smooth blank ovals with absolutely no mouth, no lips, and "
-               "no facial features. Accent color: warm amber.")
+INTRO_SCENE = ("Two mannequin figures seated at a news desk with studio microphones, "
+               "one with a feminine silhouette in a tailored suit, one with a masculine "
+               "silhouette in a suit, hands gesturing over the desk in a cozy news "
+               "studio at sunrise. Each head is a single seamless smooth blank oval "
+               "like a polished white egg: one perfectly uniform, featureless, "
+               "unbroken surface from every angle. Accent color: warm amber.")
 
 STORY_VISUALS_PROMPT = """Below is a numbered list of today's stories on a
 technology news podcast. For EACH story write ONE line (under 40 words)
