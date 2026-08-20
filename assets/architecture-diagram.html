@@ -34,9 +34,9 @@
 
   .cover {
     position: relative; overflow: hidden;
-    width: 1600px; height: 1600px;
+    width: 1600px; height: 1760px;
     background: #0f2040;
-    padding: 56px 60px;
+    padding: 44px 60px;
   }
   .bg {
     position: absolute; inset: 0;
@@ -51,7 +51,7 @@
     background: radial-gradient(circle, rgba(80, 130, 255, 0.08) 0%, transparent 65%);
   }
 
-  .head { position: relative; z-index: 3; margin-bottom: 30px; }
+  .head { position: relative; z-index: 3; margin-bottom: 20px; }
   .head h1 { font-size: 40px; font-weight: 700; color: #fff; letter-spacing: -0.015em; }
   .head h1 .hl { color: #ff9a3c; }
   .head p { font-size: 21px; font-weight: 500; color: rgba(255,255,255,0.45); margin-top: 8px; }
@@ -62,7 +62,7 @@
     /* the column gap has to be wider than the widest edge label ("reads", "calls")
        or the label overhangs the boxes it sits between */
     grid-template-columns: 280px 1fr 280px;
-    column-gap: 76px; row-gap: 40px;
+    column-gap: 76px; row-gap: 26px;
     align-items: center;
   }
 
@@ -264,7 +264,7 @@
 
     <div class="box" id="companion" style="grid-column:1; grid-row:3;">
       <div class="t">Post-production job &middot; hn-shownotes</div>
-      <div class="s"><span style="color:#a8c1ff">scheduled daily 6:45 AM, after the audio pipeline</span><br>Gemma writes the shownotes and visual directions, Gemini maps story timestamps, Veo renders per-story backdrops, code stitches the video edition</div>
+      <div class="s"><span style="color:#a8c1ff">daily 6:45 AM, after the audio pipeline</span><br><b style="color:#ffb86e">gemma-4-31b-it</b> writes the shownotes and visual directions, <b style="color:#ffb86e">gemini-3.7-flash</b> maps story timestamps, <b style="color:#ffb86e">veo-3.1-fast</b> renders per-story backdrops, code stitches the video edition</div>
     </div>
 
     <div class="box code" id="gcs" style="grid-column:2; grid-row:3; justify-self:center; min-width:560px; text-align:center;">
