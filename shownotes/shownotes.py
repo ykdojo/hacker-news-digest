@@ -122,7 +122,10 @@ WINDOWS:
 """
 
 BEATS_PROMPT = """A video backdrop shows one continuous scene behind a podcast
-story. Setting: {theme}
+story.
+
+Story: {story}
+Setting: {theme}
 
 The story's consecutive moments are:
 {notes}
@@ -361,7 +364,7 @@ def make_video(bucket, client, script, stories):
                 if len(seg_notes) <= 1 or seg == 0:
                     continue  # single-clip stories and the intro keep the plain scene
                 txt = gemma(client, BEATS_PROMPT.format(
-                    theme=themes[seg], n=len(seg_notes),
+                    story=(["intro"] + stories)[seg], theme=themes[seg], n=len(seg_notes),
                     notes="\n".join(f"{i+1}. {nt}" for i, nt in enumerate(seg_notes))))
                 bs = parse_numbered(txt, len(seg_notes))
                 if len(bs) == len(seg_notes):
