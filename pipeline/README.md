@@ -6,6 +6,20 @@ Ported from the public article repo for the All Things Agentic Hackathon submiss
 
 **The complete step-by-step spin-up guide (clone to running episode, plus the environment reference) is in the [main README](../README.md#run-it-yourself-step-by-step).**
 
+## Environment
+
+- `GEMINI_API_KEY`: key for the TTS calls (free tier works)
+- `GOOGLE_GENAI_USE_ENTERPRISE=TRUE` plus application default credentials: for the text models, billed to your Cloud project
+- `GOOGLE_CLOUD_LOCATION=global`
+- `PUBLISH_BUCKET`: Cloud Storage bucket name. Unset writes to `./out` locally
+- `STORY_CHECK=1`: per-story digest fact-checking. Recommended; it beat script-level-only checking in testing
+- `DRY_RUN=1`: stop before TTS and publishing, for cheap logic tests
+- `ENABLE_TRACING=1`: export agent/tool/model spans to Cloud Trace (service account needs `roles/cloudtrace.agent`, then view at Console > Trace explorer)
+- `WINDOW_HOURS`: lookback window in hours, default 26
+- `SEGMENT_WORDS`: target words per TTS segment, default 160 (about a minute of speech). Segments break only between speaker turns, and prefer to break where a new story starts
+- `SEAM_GAP_MS`: silence inserted between TTS segments, default 350
+- `INTRO_MUSIC=0`: disable the Lyria-generated intro theme, which is on by default. A `music_director` agent writes a music prompt from the day's headlines, Lyria renders a short instrumental clip, and ffmpeg fades it under the hosts' opening lines. Any Lyria failure just skips the music
+
 ## Files
 
 - [pipeline.py](pipeline.py): the entire pipeline. The graph, the agents and their prompts, fact-checking, TTS rendering, and publishing.

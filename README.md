@@ -22,7 +22,7 @@ Stack: **Google ADK 2** (graph workflow with dynamic per-story fan-out), **Gemin
 
 ### Post-production job
 
-[shownotes/](shownotes/) is a second, deliberately tiny Cloud Run job scheduled after the audio pipeline. It is **optional and off by default**: the audio pipeline is complete without it, and the video edition only renders when the job runs with `VIDEO=1` (about US$20 per episode at Veo 3.1 Fast pricing; the Gemma shownotes step alone costs pennies). The production deployment runs with the flag on, which is where the video editions in the public bucket come from. It reads the day's published script, has **Gemma** write the listener-facing episode description into the RSS feed, maps each story's start time from the audio (Gemini audio understanding, snapped to the silences the pipeline inserts between segments), has Gemma write a per-story Veo prompt, renders an 8-second ambient backdrop per story with **Veo**, and stitches them under the episode audio into `episodes/DATE-video.mp4`. Any failure leaves the feed exactly as the pipeline published it. Deploy guide: [shownotes/README.md](shownotes/README.md).
+[shownotes/](shownotes/) is a second, deliberately tiny Cloud Run job that runs after the audio pipeline: **Gemma** writes the episode description into the RSS feed, Gemini maps each story's start time from the audio, Gemma writes a Veo prompt per story, **Veo** renders unique backdrops, and code stitches them under the audio into a video edition. Any failure leaves the feed exactly as the pipeline published it. The job is optional and the video is opt-in via `VIDEO=1` (~US$20/episode; the shownotes step costs pennies; the production deployment runs with it on). Deploy guide: [shownotes/README.md](shownotes/README.md).
 
 ## Run it yourself, step by step
 
@@ -111,21 +111,11 @@ The goal: from a fresh clone to a real episode running on Cloud Run. Every comma
 
 ### Environment reference
 
-- `GEMINI_API_KEY`: key for the TTS calls (free tier works)
-- `GOOGLE_GENAI_USE_ENTERPRISE=TRUE` plus application default credentials: for the text models, billed to your Cloud project
-- `GOOGLE_CLOUD_LOCATION=global`
-- `PUBLISH_BUCKET`: Cloud Storage bucket name. Unset writes to `./out` locally
-- `STORY_CHECK=1`: per-story digest fact-checking. Recommended; it beat script-level-only checking in testing
-- `DRY_RUN=1`: stop before TTS and publishing, for cheap logic tests
-- `ENABLE_TRACING=1`: export agent/tool/model spans to Cloud Trace (service account needs `roles/cloudtrace.agent`, then view at Console > Trace explorer)
-- `WINDOW_HOURS`: lookback window in hours, default 26
-- `SEGMENT_WORDS`: target words per TTS segment, default 160 (about a minute of speech). Segments break only between speaker turns, and prefer to break where a new story starts
-- `SEAM_GAP_MS`: silence inserted between TTS segments, default 350
-- `INTRO_MUSIC=0`: disable the Lyria-generated intro theme, which is on by default. A `music_director` agent writes a music prompt from the day's headlines, Lyria renders a short instrumental clip, and ffmpeg fades it under the hosts' opening lines. Any Lyria failure just skips the music
+All pipeline knobs (`DRY_RUN`, `WINDOW_HOURS`, `STORY_CHECK`, `ENABLE_TRACING`, segmenting and intro-music options) are documented in [pipeline/README.md](pipeline/README.md).
 
 ## Mission replay
 
-[prototypes/replay/](prototypes/replay/) is an interactive replay of a real production run, built from the actual Cloud Run logs and the episode's claim ledger. The agent graph lights up stage by stage, story lanes show repair rounds, claim chips fill in as verification passes, and a rewrite loop fires on camera when a claim fails. It has a recorded mode (any past run via `fetch_run.py --date`) and a live mode that tails a run in progress. Tests and usage in [prototypes/replay/testing.md](prototypes/replay/testing.md).
+[prototypes/replay/](prototypes/replay/) replays a real production run from the actual Cloud Run logs and claim ledger: the agent graph lights up stage by stage, story lanes show repair rounds, and a rewrite loop fires on camera when a claim fails. Recorded mode replays any past run (`fetch_run.py --date`); live mode tails a run in progress. Tests in [prototypes/replay/testing.md](prototypes/replay/testing.md).
 
 ```bash
 cd prototypes/replay && python3 -m http.server 8000   # then open http://localhost:8000
