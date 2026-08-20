@@ -101,9 +101,11 @@ STORY_VISUALS_PROMPT = """Below is a numbered list of today's stories on a
 technology news podcast. For EACH story write ONE line (under 40 words)
 describing a scene grounded in that story's real subject, usually with zero,
 one, or two faceless mannequin figures (at most five if truly needed): the
-setting, what the mannequin is doing, key props, and one accent color. Feel
-free to add one creative or playful visual twist per scene, and dress the
-mannequins in whatever fits the scene rather than defaulting to suits. No text, no logos, no brand names. Output
+setting, what the mannequin is doing, key props, and one accent color. One
+imaginative visual idea per scene is welcome - striking and cinematic, never
+silly or absurd - and the story must stay instantly recognizable from the
+image alone. Dress the mannequins in clothing appropriate to the setting
+rather than defaulting to suits. No text, no logos, no brand names. Output
 exactly {n} lines, in order, formatted as 'N. <line>' with nothing else.
 
 STORIES:
