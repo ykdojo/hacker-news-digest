@@ -81,7 +81,8 @@ MANNEQUIN_STYLE = (
     "Head surfaces are matte porcelain-white or light grey artificial material, "
     "absolutely not human skin. Tailored clothing. The mannequins are alive and move "
     "naturally like people: walking, turning, gesturing, handling objects as they act "
-    "out the scene. Soft cinematic studio lighting, shallow depth of field, muted "
+    "out the scene. Only ONE or TWO mannequins appear in the scene - never a crowd. "
+    "Soft cinematic studio lighting, shallow depth of field, muted "
     "color grade with one accent color, gentle camera movement, no text, no logos. "
     "Every single figure in the scene, foreground and background, is such a faceless "
     "living mannequin.")
@@ -95,11 +96,11 @@ INTRO_SCENE = ("Two faceless mannequin podcast hosts seated at a news desk with 
 
 STORY_VISUALS_PROMPT = """Below is a numbered list of today's stories on a
 technology news podcast. For EACH story write ONE line (under 40 words)
-describing a scene in which faceless mannequin figures act out that story
-LITERALLY: the real setting where the story takes place and the actual
-activity involved (e.g. a newsroom, a server room, a courtroom, a lab), what
-the mannequins are doing, key props, and one accent color. Prefer the
-concrete subject over metaphor. No text, no logos, no brand names. Output
+describing a scene in which ONE or TWO faceless mannequin figures (never
+more) act out that story LITERALLY: the real setting where the story takes
+place and the actual activity involved (e.g. a newsroom, a server room, a
+courtroom, a lab), what the mannequin is doing, key props, and one accent
+color. Prefer the concrete subject over metaphor. No text, no logos, no brand names. Output
 exactly {n} lines, in order, formatted as 'N. <line>' with nothing else.
 
 STORIES:
