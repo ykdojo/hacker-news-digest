@@ -85,8 +85,9 @@ MANNEQUIN_STYLE = (
 
 INTRO_SCENE = ("Two faceless mannequin podcast hosts at a sleek desk with studio microphones: one "
                "with a feminine silhouette in a tailored suit, one with a masculine "
-               "silhouette in a suit, gesturing mid-conversation in a cozy news studio "
-               "at sunrise. Accent color: warm amber.")
+               "silhouette in a suit, hands gesturing over the desk in a cozy news studio "
+               "at sunrise. Their heads are perfectly smooth blank ovals with absolutely "
+               "no mouth, no lips, and no facial features. Accent color: warm amber.")
 
 STORY_VISUALS_PROMPT = """Below is a numbered list of today's stories on a
 technology news podcast. For EACH story write ONE line (under 40 words)
