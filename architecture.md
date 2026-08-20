@@ -1,6 +1,6 @@
 # System architecture
 
-The diagram submitted to Devpost is [assets/architecture.png](assets/architecture.png), generated from [assets/architecture-diagram.html](assets/architecture-diagram.html) via `python3 assets/render_architecture.py`. Devpost requires the diagram as an uploaded file, not as a description, and it shares the dark cover style used for the article.
+The diagram submitted to Devpost is [assets/architecture-combined.png](assets/architecture-combined.png): the system diagram ([assets/architecture-diagram.html](assets/architecture-diagram.html), rendered via `python3 assets/render_architecture.py`) stitched above the video-edition flow strip ([assets/architecture-video-strip.html](assets/architecture-video-strip.html)). Devpost requires the diagram as an uploaded file, not as a description, and it shares the dark cover style used for the article.
 
 ![System architecture](assets/architecture.png)
 

@@ -12,7 +12,7 @@ Built for the [All Things Agentic Hackathon](https://allthingsagentichackathon.d
 
 ## Architecture
 
-![System architecture](assets/architecture.png)
+![System architecture](assets/architecture-combined.png)
 
 Deterministic code owns the graph structure, fetching, scoring, the claim ledger, routing, TTS, the intro-music mix, and publishing. Models own only what needs judgment: curation, digests, script-writing, claim extraction, fact-check verdicts, and the intro-music prompt. Every model output is schema-validated with Pydantic structured outputs.
 
