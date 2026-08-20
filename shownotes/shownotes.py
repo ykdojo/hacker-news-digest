@@ -1,7 +1,7 @@
 """Companion job: Gemma shownotes + Veo video edition.
 
 A second, deliberately tiny Cloud Run job that runs after the main pipeline
-(scheduled 6:45 AM PT; the pipeline publishes by ~6:30). The main pipeline is
+(scheduled 6:30 AM PT; the pipeline typically publishes by ~6:15). The main pipeline is
 never touched; any failure here leaves the feed exactly as published.
 
 Two steps, both driven by the day's published script:

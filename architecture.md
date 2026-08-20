@@ -44,7 +44,7 @@ flowchart TB
   job -->|"writes the episode"| gcs[("Cloud Storage · public bucket<br/>mp3 · feed.xml · script · claim ledger · video edition")]
   gcs -->|"RSS 2.0"| apps["Any podcast app<br/>(follow by URL)"]
 
-  scheduler -.->|"invokes · daily 6:45"| post["Post-production job: hn-shownotes<br/>Gemma shownotes · Gemini story timestamps ·<br/>Gemma Veo prompts · Veo backdrops · ffmpeg stitch"]
+  scheduler -.->|"invokes · daily 6:30"| post["Post-production job: hn-shownotes<br/>Gemma shownotes · Gemini story timestamps ·<br/>Gemma Veo prompts · Veo backdrops · ffmpeg stitch"]
   post <-->|"reads the episode, writes shownotes + video"| gcs
 
   job -.->|"stdout · OTel spans"| obs["Cloud Logging · Cloud Trace"]
