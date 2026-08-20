@@ -52,7 +52,7 @@ The goal: from a fresh clone to a real episode running on Cloud Run. Every comma
      --member=allUsers --role=roles/storage.objectViewer
    ```
 
-5. **Cheap local test first**. No TTS and no publishing, so it stops before the paid steps. Edit `PROJECT` at the top of `pipeline/run_local.py`, then:
+5. **Cheap local test first**. No TTS and no publishing, so it stops before the paid steps. Edit `PROJECT` at the top of `run_local.py`, then:
 
    ```bash
    python3 -m venv .venv && source .venv/bin/activate
