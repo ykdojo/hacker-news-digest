@@ -4,7 +4,7 @@ The full pipeline behind [Turning Hacker News into a daily podcast with ADK 2, G
 
 Ported from the public article repo for the All Things Agentic Hackathon submission, with two changes on top: the main model default is now `gemini-3.7-flash` (rules require Gemini 3.5+), and `ENABLE_TRACING=1` exports ADK's OpenTelemetry spans to Cloud Trace.
 
-**The complete step-by-step spin-up guide (clone to running episode, plus the environment reference) is in the [main README](../README.md#run-it-yourself-step-by-step).**
+**The complete step-by-step spin-up guide (clone to running episode) is in the [main README](../README.md#run-it-yourself-step-by-step).** The environment knobs are below.
 
 ## Environment
 
