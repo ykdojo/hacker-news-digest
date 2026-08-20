@@ -22,7 +22,9 @@ Stack: **Google ADK 2** (graph workflow with dynamic per-story fan-out), **Gemin
 
 ### Post-production job
 
-![The two hosts, as the video edition renders them](assets/stills/hosts.jpg)
+Frames from a pipeline-generated video edition - Gemma writes each scene, Veo renders it:
+
+<img src="assets/stills/hosts.jpg" width="32%"> <img src="assets/stills/fact-check.jpg" width="32%"> <img src="assets/stills/gavel.jpg" width="32%">
 
 [shownotes/](shownotes/) is a second, deliberately tiny Cloud Run job that runs after the audio pipeline: **Gemma** writes the episode description into the RSS feed, Gemini maps each story's start time from the audio, Gemma writes a Veo prompt per story, **Veo** renders per-story backdrops, and code stitches them under the audio into a video edition. Any failure leaves the feed exactly as the pipeline published it. The job is optional and the video is opt-in via `VIDEO=1` (~US$20/episode; the shownotes step costs pennies; the production deployment runs with it on). Deploy guide: [shownotes/README.md](shownotes/README.md).
 
