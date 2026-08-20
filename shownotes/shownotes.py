@@ -44,6 +44,8 @@ BUCKET = os.environ["PUBLISH_BUCKET"]
 GEMMA_MODEL = os.environ.get("GEMMA_MODEL", "gemma-4-31b-it")
 VEO_MODEL = os.environ.get("VEO_MODEL", "veo-3.1-fast-generate-001")
 VIDEO = os.environ.get("VIDEO", "0") == "1"
+SLOW = 2.0                       # slow-motion factor: 8s of footage covers 16s
+COVER = 8.0 * SLOW
 DATE = os.environ.get("EPISODE_DATE") or datetime.datetime.now(
     ZoneInfo("America/Los_Angeles")).strftime("%Y-%m-%d")
 
@@ -193,25 +195,36 @@ def story_timestamps(audio_path, stories, duration):
     return snapped
 
 
-def assemble(tmp, clips, boundaries, duration, audio, out):
-    """Per story: loop its clip across its time range with fade in/out, then
-    concatenate and mux the episode audio."""
+def assemble(tmp, clips, plan, boundaries, duration, audio, out):
+    """Encode each sub-clip slowed 2x across its time range (no footage ever
+    repeats), fade between them, concatenate, and mux the episode audio."""
+    from concurrent.futures import ThreadPoolExecutor
     ends = boundaries[1:] + [duration]
-    segs = []
-    for i, (clip_bytes, start, end) in enumerate(zip(clips, boundaries, ends)):
-        seg_dur = end - start
-        clip, seg = f"{tmp}/clip{i}.mp4", f"{tmp}/seg{i}.mp4"
-        open(clip, "wb").write(clip_bytes)
+    jobs, idx = [], 0
+    for seg, (start, end) in enumerate(zip(boundaries, ends)):
+        remaining = end - start
+        n = sum(1 for sp in plan if sp == seg)
+        for k in range(n):
+            d = min(COVER, remaining) if k < n - 1 else max(remaining, 0.5)
+            remaining -= d
+            jobs.append((idx, d)); idx += 1
+
+    def encode(job):
+        i, d = job
+        cp, sp = f"{tmp}/clip{i}.mp4", f"{tmp}/seg{i}.mp4"
+        open(cp, "wb").write(clips[i])
         subprocess.run(
-            ["ffmpeg", "-y", "-v", "error", "-stream_loop", "-1", "-i", clip,
-             "-t", f"{seg_dur:.3f}", "-an",
-             "-vf", f"scale=1280:720,fps=24,format=yuv420p,"
-                    f"fade=t=in:d=0.5,fade=t=out:st={max(seg_dur-0.5,0):.3f}:d=0.5",
-             "-c:v", "libx264", "-b:v", "800k", "-preset", "fast", seg],
+            ["ffmpeg", "-y", "-v", "error", "-i", cp, "-t", f"{d:.3f}", "-an",
+             "-vf", f"setpts={SLOW}*PTS,fps=24,scale=1280:720,format=yuv420p,"
+                    f"fade=t=in:d=0.4,fade=t=out:st={max(d-0.4,0):.3f}:d=0.4",
+             "-c:v", "libx264", "-b:v", "800k", "-preset", "fast", sp],
             check=True)
-        segs.append(seg)
+        return sp
+
+    with ThreadPoolExecutor(max_workers=int(os.environ.get("ENCODE_WORKERS", "4"))) as pool:
+        segs = list(pool.map(encode, jobs))
     concat_list = f"{tmp}/list.txt"
-    open(concat_list, "w").write("".join(f"file '{s}'\n" for s in segs))
+    open(concat_list, "w").write("".join(f"file '{sp}'\n" for sp in segs))
     subprocess.run(
         ["ffmpeg", "-y", "-v", "error", "-f", "concat", "-safe", "0",
          "-i", concat_list, "-i", audio, "-map", "0:v", "-map", "1:a",
@@ -220,6 +233,7 @@ def assemble(tmp, clips, boundaries, duration, audio, out):
 
 
 def make_video(bucket, client, script, stories):
+    import math
     video_blob = bucket.blob(f"episodes/{DATE}-video.mp4")
     if video_blob.exists():
         print(f"video: episodes/{DATE}-video.mp4 already exists, skipping")
@@ -233,23 +247,34 @@ def make_video(bucket, client, script, stories):
 
         try:
             boundaries = story_timestamps(audio, stories, duration)
-            boundaries[0] = 0.0  # the first clip also covers the intro
+            boundaries[0] = 0.0  # the first sequence also covers the intro
             text = gemma(client, STORY_VISUALS_PROMPT.format(
                 n=len(stories), stories="\n".join(
                     f"{i+1}. {s}" for i, s in enumerate(stories))))
-            directions = [re.sub(r"^\s*\d+\.\s*", "", l).strip()
-                          for l in text.splitlines() if re.match(r"\s*\d+\.\s", l)]
-            if len(directions) != len(stories):
-                raise ValueError(f"{len(directions)} directions for {len(stories)} stories")
-            for d in directions:
-                print(f"video: direction: {d[:100]}")
-            clips = veo_generate(directions)
-        except Exception as e:  # fall back to one ambient loop for the episode
-            print(f"video: per-story path failed ({e}), falling back to single loop")
-            direction = gemma(client, VISUAL_PROMPT.format(script=script))[:500]
-            boundaries, clips = [0.0], veo_generate([direction])
+            themes = [re.sub(r"^\s*\d+\.\s*", "", l).strip()
+                      for l in text.splitlines() if re.match(r"\s*\d+\.\s", l)]
+            if len(themes) != len(stories):
+                raise ValueError(f"{len(themes)} themes for {len(stories)} stories")
+        except Exception as e:  # degrade to one Gemma theme for the whole episode
+            print(f"video: per-story path failed ({e}), single-theme fallback")
+            boundaries = [0.0]
+            themes = [gemma(client, VISUAL_PROMPT.format(script=script))[:500]]
 
-        assemble(tmp, clips, boundaries, duration, audio, out)
+        # Every second of video is unique footage: each time range is covered
+        # by a sequence of distinct clips (slowed 2x), never a loop.
+        ends = boundaries[1:] + [duration]
+        plan, prompts = [], []
+        for seg, (theme, start, end) in enumerate(zip(themes, boundaries, ends)):
+            n = max(1, math.ceil((end - start) / COVER))
+            for k in range(n):
+                plan.append(seg)
+                prompts.append(f"{theme} Phase {k+1} of {n} of one continuously "
+                               f"evolving take of the same scene.")
+        for t in themes:
+            print(f"video: theme: {t[:100]}")
+        print(f"video: {len(prompts)} unique clips planned")
+        clips = veo_generate(prompts)
+        assemble(tmp, clips, plan, boundaries, duration, audio, out)
         video_blob.upload_from_filename(out, content_type="video/mp4")
     print(f"video: published episodes/{DATE}-video.mp4")
 
