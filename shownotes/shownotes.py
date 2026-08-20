@@ -97,11 +97,11 @@ INTRO_SCENE = ("Two mannequin figures seated at a news desk with studio micropho
 
 STORY_VISUALS_PROMPT = """Below is a numbered list of today's stories on a
 technology news podcast. For EACH story write ONE line (under 40 words)
-describing a scene that shows that story LITERALLY, usually with zero, one,
-or two faceless mannequin figures (at most five if truly needed): the real setting where the story takes
-place and the actual activity involved (e.g. a newsroom, a server room, a
-courtroom, a lab), what the mannequin is doing, key props, and one accent
-color. Prefer the concrete subject over metaphor. No text, no logos, no brand names. Output
+describing a scene grounded in that story's real subject, usually with zero,
+one, or two faceless mannequin figures (at most five if truly needed): the
+setting, what the mannequin is doing, key props, and one accent color. Feel
+free to add one creative or playful visual twist per scene, and dress the
+mannequins in whatever fits the scene rather than defaulting to suits. No text, no logos, no brand names. Output
 exactly {n} lines, in order, formatted as 'N. <line>' with nothing else.
 
 STORIES:
