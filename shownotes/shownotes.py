@@ -11,10 +11,11 @@ Two steps, both driven by the day's published script:
    <description> in feed.xml. Gemma also writes a one-line visual direction
    for step 2, the same way the pipeline's music_director writes Lyria's
    prompt.
-2. Video edition (Veo, optional): Veo renders an 8-second ambient loop from
-   the visual direction, ffmpeg tiles it under the episode audio, and the
+2. Video edition (Veo, opt-in, OFF by default - set VIDEO=1): Veo renders
+   ambient backdrops, ffmpeg assembles them under the episode audio, and the
    result is published as episodes/DATE-video.mp4. Skipped if the video
-   already exists (idempotent) or VIDEO=0.
+   already exists (idempotent). Veo dominates the job's cost; the shownotes
+   step alone costs pennies.
 
 Env:
   PUBLISH_BUCKET   bucket name (required)
@@ -22,7 +23,7 @@ Env:
   GEMMA_MODEL      default gemma-4-31b-it
   VEO_MODEL        default veo-3.1-fast-generate-001 (via Vertex AI)
   GOOGLE_CLOUD_PROJECT / GOOGLE_CLOUD_LOCATION  for the Vertex Veo call
-  VIDEO=0          disable the video edition
+  VIDEO=1          enable the video edition (off by default; Veo cost)
   EPISODE_DATE     YYYY-MM-DD, default today in Pacific time
 """
 
@@ -42,7 +43,7 @@ from google.cloud import storage
 BUCKET = os.environ["PUBLISH_BUCKET"]
 GEMMA_MODEL = os.environ.get("GEMMA_MODEL", "gemma-4-31b-it")
 VEO_MODEL = os.environ.get("VEO_MODEL", "veo-3.1-fast-generate-001")
-VIDEO = os.environ.get("VIDEO", "1") != "0"
+VIDEO = os.environ.get("VIDEO", "0") == "1"
 DATE = os.environ.get("EPISODE_DATE") or datetime.datetime.now(
     ZoneInfo("America/Los_Angeles")).strftime("%Y-%m-%d")
 
