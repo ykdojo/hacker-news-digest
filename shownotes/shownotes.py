@@ -84,7 +84,7 @@ MANNEQUIN_STYLE = (
     "accent color, slow camera drift, no text, no logos. Every single figure in the "
     "scene, foreground and background, is such a faceless mannequin.")
 
-INTRO_SCENE = ("Two mannequin podcast hosts at a sleek desk with studio microphones: one "
+INTRO_SCENE = ("Two faceless mannequin podcast hosts at a sleek desk with studio microphones: one "
                "with a feminine silhouette in a tailored suit, one with a masculine "
                "silhouette in a suit, gesturing mid-conversation in a cozy news studio "
                "at sunrise. Accent color: warm amber.")
