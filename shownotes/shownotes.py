@@ -112,6 +112,27 @@ STORIES:
 {stories}
 """
 
+WINDOW_NOTES_PROMPT = """This audio is a two-host news podcast episode. For each
+time window below, write one short clause (under 15 words) saying what the
+hosts are specifically discussing during that window. Output one line per
+window, in order, formatted 'N. <clause>', nothing else.
+
+WINDOWS:
+{windows}
+"""
+
+BEATS_PROMPT = """A video backdrop shows one continuous scene behind a podcast
+story. Setting: {theme}
+
+The story's consecutive moments are:
+{notes}
+
+For EACH moment write ONE line (under 30 words): the same setting and the same
+faceless mannequin figure(s) continuing the scene, with the action subtly
+reflecting that moment. Keep strict visual continuity. No text, no logos.
+Output exactly {n} lines, in order, formatted 'N. <line>' with nothing else.
+"""
+
 TIMESTAMPS_PROMPT = """This audio is a two-host news podcast episode. For each
 story title below, give the timestamp where the hosts START discussing that
 story. Output one line per story, in order, formatted exactly 'MM:SS | title',
@@ -312,15 +333,55 @@ def make_video(bucket, client, script, stories):
             themes = [gemma(client, VISUAL_PROMPT.format(script=script))[:500]]
 
         # Every second of video is unique footage: each time range is covered
-        # by a sequence of distinct clips (slowed 2x), never a loop.
+        # by a sequence of distinct clips (slowed 2x), never a loop. Each clip's
+        # action follows what is being said in its own time window.
         ends = boundaries[1:] + [duration]
-        plan, prompts = [], []
-        for seg, (theme, start, end) in enumerate(zip(themes, boundaries, ends)):
+        windows = []
+        for seg, (start, end) in enumerate(zip(boundaries, ends)):
             n = max(1, math.ceil((end - start) / COVER))
             for k in range(n):
-                plan.append(seg)
+                windows.append((seg, start + k * COVER, min(start + (k + 1) * COVER, end)))
+        beats = {}
+        try:
+            from google.genai import types as gtypes
+            listing = "\n".join(f"{i+1}. {int(a)}s-{int(b)}s" for i, (_, a, b) in enumerate(windows))
+            gem = genai.Client(vertexai=True,
+                               project=os.environ["GOOGLE_CLOUD_PROJECT"],
+                               location=os.environ.get("GOOGLE_CLOUD_LOCATION", "global"))
+            notes_text = gem.models.generate_content(
+                model=os.environ.get("TS_MODEL", "gemini-3.7-flash"),
+                contents=[gtypes.Part.from_bytes(data=open(audio, "rb").read(),
+                                                 mime_type="audio/mpeg"),
+                          WINDOW_NOTES_PROMPT.format(windows=listing)]).text
+            notes = parse_numbered(notes_text, len(windows))
+            if len(notes) != len(windows):
+                raise ValueError(f"{len(notes)} notes for {len(windows)} windows")
+            for seg in range(len(themes)):
+                seg_notes = [nt for (sg, _, _), nt in zip(windows, notes) if sg == seg]
+                if len(seg_notes) <= 1 or seg == 0:
+                    continue  # single-clip stories and the intro keep the plain scene
+                txt = gemma(client, BEATS_PROMPT.format(
+                    theme=themes[seg], n=len(seg_notes),
+                    notes="\n".join(f"{i+1}. {nt}" for i, nt in enumerate(seg_notes))))
+                bs = parse_numbered(txt, len(seg_notes))
+                if len(bs) == len(seg_notes):
+                    beats[seg] = bs
+        except Exception as e:  # beats are an enhancement, never fatal
+            print(f"video: window beats unavailable ({e}), using phase prompts")
+
+        plan, prompts, seg_counter = [], [], {}
+        for seg, start, end in windows:
+            k = seg_counter.get(seg, 0)
+            seg_counter[seg] = k + 1
+            n = sum(1 for sg, _, _ in windows if sg == seg)
+            theme = themes[seg]
+            if seg in beats:
+                prompts.append(f"{MANNEQUIN_STYLE} Setting: {theme} Now: {beats[seg][k]} "
+                               f"Part {k+1} of {n} of one continuous take of the same scene.")
+            else:
                 prompts.append(f"{MANNEQUIN_STYLE} Scene: {theme} Phase {k+1} of {n} "
                                f"of one continuously evolving take of the same scene.")
+            plan.append(seg)
         for t in themes:
             print(f"video: theme: {t[:100]}")
         print(f"video: {len(prompts)} unique clips planned")
