@@ -8,14 +8,13 @@ Two steps, both driven by the day's published script:
 
 1. Shownotes (Gemma): reads episodes/DATE-script.txt, writes a 2-3 sentence
    listener-facing episode description, and rewrites that episode's
-   <description> in feed.xml. Gemma also writes a one-line visual direction
-   for step 2, the same way the pipeline's music_director writes Lyria's
-   prompt.
-2. Video edition (Veo, opt-in, OFF by default - set VIDEO=1): Veo renders
-   ambient backdrops, ffmpeg assembles them under the episode audio, and the
-   result is published as episodes/DATE-video.mp4. Skipped if the video
-   already exists (idempotent). Veo dominates the job's cost; the shownotes
-   step alone costs pennies.
+   <description> in feed.xml.
+2. Video edition (Veo, opt-in, OFF by default - set VIDEO=1): Gemini maps
+   story timestamps from the audio, Gemma writes a mannequin-style Veo scene
+   per story, Veo renders unique 8s backdrops (no footage repeats), and
+   ffmpeg stitches them under the audio into episodes/DATE-video.mp4.
+   Skipped if the video already exists (idempotent). Veo dominates the cost;
+   the shownotes step alone costs pennies.
 
 Env:
   PUBLISH_BUCKET   bucket name (required)
