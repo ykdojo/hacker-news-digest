@@ -1,6 +1,6 @@
 # Hacker News Digest
 
-A system of agents on Google Cloud that writes, fact-checks, and publishes a daily podcast.
+A system for generating a daily podcast summarizing Hacker News, with fact-checking loops to ensure accuracy.
 
 Every morning at 6 AM Pacific, a Cloud Run job reads the last 26 hours of Hacker News and picks the stories worth talking about. It digests and fact-checks each story against the actual linked articles and comment threads, then writes a two-host script and verifies it again, claim by claim. Lyria composes an intro theme to match the day's headlines, multi-speaker Gemini TTS renders the audio, and the job publishes an mp3 plus an RSS feed to a public bucket. Paste the feed URL into any podcast app and it is a real show.
 
