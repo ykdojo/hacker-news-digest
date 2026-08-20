@@ -75,12 +75,26 @@ SCRIPT:
 {script}
 """
 
+MANNEQUIN_STYLE = (
+    "Photorealistic 3D render of shop-window display mannequins: completely smooth, "
+    "blank, featureless heads with NO eyes, NO eyebrows, NO nose, NO mouth, NO hair, "
+    "NO ears, NO facial features of any kind. Head surfaces are matte porcelain-white "
+    "or light grey artificial material, absolutely not human skin. Tailored clothing. "
+    "Soft cinematic studio lighting, shallow depth of field, muted color grade with one "
+    "accent color, slow camera drift, no text, no logos. Every single figure in the "
+    "scene, foreground and background, is such a faceless mannequin.")
+
+INTRO_SCENE = ("Two mannequin podcast hosts at a sleek desk with studio microphones: one "
+               "with a feminine silhouette in a tailored suit, one with a masculine "
+               "silhouette in a suit, gesturing mid-conversation in a cozy news studio "
+               "at sunrise. Accent color: warm amber.")
+
 STORY_VISUALS_PROMPT = """Below is a numbered list of today's stories on a
 technology news podcast. For EACH story write ONE line (under 40 words)
-describing an abstract ambient background video that evokes that story's
-theme: slow continuous motion, cinematic, calm, no text, no logos, no people,
-no readable objects, abstract colors and forms only. Output exactly {n}
-lines, in order, formatted as 'N. <line>' with nothing else.
+describing a scene in which faceless mannequin figures act out that story's
+theme: a concrete setting, what the mannequins are doing, key props, and one
+accent color. No text, no logos, no brand names. Output exactly {n} lines, in
+order, formatted as 'N. <line>' with nothing else.
 
 STORIES:
 {stories}
@@ -248,7 +262,9 @@ def make_video(bucket, client, script, stories):
 
         try:
             boundaries = story_timestamps(audio, stories, duration)
-            boundaries[0] = 0.0  # the first sequence also covers the intro
+            # dedicated host-desk intro segment before the first story
+            intro_end = min(12.0, max(boundaries[0], 4.0))
+            boundaries = [0.0, intro_end] + boundaries[1:]
             text = gemma(client, STORY_VISUALS_PROMPT.format(
                 n=len(stories), stories="\n".join(
                     f"{i+1}. {s}" for i, s in enumerate(stories))))
@@ -256,6 +272,7 @@ def make_video(bucket, client, script, stories):
                       for l in text.splitlines() if re.match(r"\s*\d+\.\s", l)]
             if len(themes) != len(stories):
                 raise ValueError(f"{len(themes)} themes for {len(stories)} stories")
+            themes = [INTRO_SCENE] + themes
         except Exception as e:  # degrade to one Gemma theme for the whole episode
             print(f"video: per-story path failed ({e}), single-theme fallback")
             boundaries = [0.0]
@@ -269,8 +286,8 @@ def make_video(bucket, client, script, stories):
             n = max(1, math.ceil((end - start) / COVER))
             for k in range(n):
                 plan.append(seg)
-                prompts.append(f"{theme} Phase {k+1} of {n} of one continuously "
-                               f"evolving take of the same scene.")
+                prompts.append(f"{MANNEQUIN_STYLE} Scene: {theme} Phase {k+1} of {n} "
+                               f"of one continuously evolving take of the same scene.")
         for t in themes:
             print(f"video: theme: {t[:100]}")
         print(f"video: {len(prompts)} unique clips planned")
