@@ -34,7 +34,7 @@ Models own only what needs judgment:
 
 Every model output is validated against a schema with Pydantic structured outputs.
 
-Verification runs at two levels. Each story's summary gets its own fact-check with up to 2 repair rounds. Then the finished script goes through a claim-by-claim check with a rewrite loop. A segment that still fails is cut rather than aired. And because every episode publishes its claim ledger next to the audio, any line of the show traces back to a verified claim.
+Verification runs at two levels. Each story's summary gets its own fact-check with up to 2 repair rounds. Then the finished script goes through a claim-by-claim check with a rewrite loop. A segment that still fails is cut rather than aired.
 
 The stack:
 
