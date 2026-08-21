@@ -2,41 +2,55 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Video edition flow</title>
+<title>Video generation mechanics</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { font-family: 'Inter', -apple-system, sans-serif; }
-  .cover { position: relative; overflow: hidden; width: 1600px; height: 1010px;
+  .cover { position: relative; overflow: hidden; width: 1600px; height: 826px;
     background: linear-gradient(100deg, #0f3552 0%, #12424d 55%, #1a4a3a 100%); padding: 44px 60px; }
   .head h1 { font-size: 32px; font-weight: 700; color: #fff; }
   .head h1 .hl { color: #ff9a3c; }
   .head p { font-size: 18px; font-weight: 500; color: rgba(255,255,255,0.5); margin-top: 6px; }
-  .tl { margin-top: 30px; }
+  .tl { margin-top: 28px; }
   .tl .cap { font-size: 15px; font-weight: 600; color: rgba(255,255,255,0.65); margin-bottom: 10px; }
-  .bar { display: flex; height: 54px; border-radius: 10px; overflow: hidden;
-    border: 1.5px solid rgba(255,255,255,0.25); }
+  .bar { display: flex; height: 54px; border-radius: 10px; overflow: hidden; border: 1.5px solid rgba(255,255,255,0.25); }
   .seg { position: relative; border-right: 2px solid rgba(255,154,60,0.85); background: rgba(120,160,255,0.10); }
   .seg:nth-child(odd) { background: rgba(120,160,255,0.20); }
   .seg:last-child { border-right: none; }
-  .seg span { position: absolute; top: 6px; left: 0; right: 0; text-align: center;
-    font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.85); }
+  .seg span { position: absolute; top: 6px; left: 0; right: 0; text-align: center; font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.85); }
   .ticks { position: absolute; bottom: 0; left: 0; right: 0; height: 18px; display: flex; }
   .ticks i { border-right: 1px solid rgba(255,255,255,0.3); height: 100%; }
   .ticks i:last-child { border-right: none; }
   .legend { display: flex; gap: 26px; font-size: 13.5px; font-weight: 500; color: rgba(255,255,255,0.5); margin-top: 8px; }
   .legend b { color: rgba(255,154,60,0.9); font-weight: 600; } .legend u { color: rgba(255,255,255,0.75); text-decoration: none; font-weight: 600; }
-  .flow { width: 900px; margin: 34px auto 0; display: flex; flex-direction: column; align-items: stretch; }
-  .node { background: rgba(255,255,255,0.05); border: 1.5px solid rgba(255,154,60,0.45);
-    border-radius: 14px; padding: 16px 22px; }
+  .cols { display: flex; gap: 40px; margin-top: 30px; align-items: flex-start; }
+  .flow { width: 640px; display: flex; flex-direction: column; }
+  .node { background: rgba(255,255,255,0.05); border: 1.5px solid rgba(255,154,60,0.45); border-radius: 14px; padding: 14px 18px; }
   .node.code { border-color: rgba(120,160,255,0.45); }
-  .node .t { font-size: 20px; font-weight: 700; color: rgba(255,255,255,0.95); }
-  .node .t em { font-style: normal; color: #ffb86e; font-weight: 700; font-size: 16px; margin-left: 10px; }
+  .node .t { font-size: 18px; font-weight: 700; color: rgba(255,255,255,0.95); }
+  .node .t em { font-style: normal; color: #ffb86e; font-weight: 700; font-size: 14px; margin-left: 8px; }
   .node.code .t em { color: #a8c1ff; }
-  .node .s { font-size: 15.5px; font-weight: 500; color: rgba(255,255,255,0.55); margin-top: 6px; line-height: 1.5; }
-  .arrow { align-self: center; width: 0; height: 0; border-left: 9px solid transparent;
-    border-right: 9px solid transparent; border-top: 12px solid rgba(255,255,255,0.35); }
-  .stem { align-self: center; width: 3px; background: rgba(255,255,255,0.35); height: 10px; }
+  .node .s { font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.55); margin-top: 5px; line-height: 1.45; }
+  .arrow { align-self: center; width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-top: 11px solid rgba(255,255,255,0.35); }
+  .stem { align-self: center; width: 3px; background: rgba(255,255,255,0.35); height: 8px; }
+  .ex { flex: 1; border: 1.5px dashed rgba(255,255,255,0.3); border-radius: 16px; padding: 18px 20px; }
+  .ex .xt { font-size: 15px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: rgba(255,255,255,0.6); }
+  .scene { margin-top: 12px; background: rgba(255,255,255,0.05); border: 1.5px solid rgba(255,154,60,0.45); border-radius: 12px; padding: 12px 16px;
+    font-size: 14.5px; color: rgba(255,255,255,0.8); line-height: 1.45; }
+  .scene b { color: #ffb86e; }
+  .lanes { display: flex; gap: 10px; margin-top: 14px; }
+  .lane { flex: 1; display: flex; flex-direction: column; }
+  .said { background: rgba(120,160,255,0.10); border: 1px solid rgba(120,160,255,0.35); border-radius: 9px; padding: 8px 9px;
+    font-size: 11.5px; color: rgba(255,255,255,0.6); font-style: italic; line-height: 1.35; min-height: 92px; }
+  .act { margin-top: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,154,60,0.45); border-radius: 9px; padding: 8px 9px;
+    font-size: 11.5px; color: rgba(255,255,255,0.85); line-height: 1.35; min-height: 108px; }
+  .dn { text-align: center; color: rgba(255,255,255,0.4); font-size: 15px; margin: 3px 0; }
+  .clip { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,154,60,0.6); border-radius: 9px; padding: 7px 6px;
+    font-size: 11.5px; font-weight: 700; color: #ffb86e; text-align: center; }
+  .merge { margin-top: 12px; text-align: center; color: rgba(255,255,255,0.5); font-size: 13.5px; font-weight: 600; }
+  .keys { display:flex; gap: 18px; margin-top: 10px; font-size: 12.5px; color: rgba(255,255,255,0.5); }
+  .keys .k1 { color: #a8c1ff; } .keys .k2 { color: rgba(255,255,255,0.8); } .keys .k3 { color: #ffb86e; }
 </style>
 </head>
 <body>
@@ -50,18 +64,27 @@
     <div class="bar"><div class="seg" style="width:2.312%"><span>intro</span><div class="ticks"><i style="width:100.000%"></i></div></div><div class="seg" style="width:15.546%"><span>story 1</span><div class="ticks"><i style="width:16.667%"></i><i style="width:16.667%"></i><i style="width:16.667%"></i><i style="width:16.667%"></i><i style="width:16.667%"></i><i style="width:16.667%"></i></div></div><div class="seg" style="width:14.775%"><span>story 2</span><div class="ticks"><i style="width:20.000%"></i><i style="width:20.000%"></i><i style="width:20.000%"></i><i style="width:20.000%"></i><i style="width:20.000%"></i></div></div><div class="seg" style="width:16.470%"><span>story 3</span><div class="ticks"><i style="width:16.667%"></i><i style="width:16.667%"></i><i style="width:16.667%"></i><i style="width:16.667%"></i><i style="width:16.667%"></i><i style="width:16.667%"></i></div></div><div class="seg" style="width:14.120%"><span>story 4</span><div class="ticks"><i style="width:20.000%"></i><i style="width:20.000%"></i><i style="width:20.000%"></i><i style="width:20.000%"></i><i style="width:20.000%"></i></div></div><div class="seg" style="width:6.261%"><span>story 5</span><div class="ticks"><i style="width:33.333%"></i><i style="width:33.333%"></i><i style="width:33.333%"></i></div></div><div class="seg" style="width:6.222%"><span>story 6</span><div class="ticks"><i style="width:33.333%"></i><i style="width:33.333%"></i><i style="width:33.333%"></i></div></div><div class="seg" style="width:5.798%"><span>story 7</span><div class="ticks"><i style="width:50.000%"></i><i style="width:50.000%"></i></div></div><div class="seg" style="width:5.837%"><span>story 8</span><div class="ticks"><i style="width:50.000%"></i><i style="width:50.000%"></i></div></div><div class="seg" style="width:6.665%"><span>story 9</span><div class="ticks"><i style="width:33.333%"></i><i style="width:33.333%"></i><i style="width:33.333%"></i></div></div><div class="seg" style="width:5.995%"><span>story 10</span><div class="ticks"><i style="width:50.000%"></i><i style="width:50.000%"></i></div></div></div>
     <div class="legend"><span><b>orange lines</b> - where a new story starts (the scene changes here)</span><span><u>small ticks</u> - the ~16-second windows (one video clip each)</span></div>
   </div>
-  <div class="flow">
-    <div class="node"><div class="t">Listen to the episode <em>gemini-3.7-flash</em></div>
-      <div class="s">The model listens to the actual audio and writes one plain sentence per window: what the hosts are talking about during those 16 seconds.</div></div>
-    <div class="stem"></div><div class="arrow"></div>
-    <div class="node"><div class="t">Design one scene per story, then an action per window <em>gemma-4-31b-it</em></div>
-      <div class="s">Gemma invents a single scene for each story - the place, the mannequin figure, the props, one accent color. Then, for every window inside that story, it writes what the mannequin is doing at that moment, based on what the hosts are saying right then. Same scene throughout a story; the action follows the conversation.</div></div>
-    <div class="stem"></div><div class="arrow"></div>
-    <div class="node"><div class="t">Render one clip per window <em>veo-3.1-fast</em></div>
-      <div class="s">Each window's description becomes its own unique 8-second video clip. All clips share one look: smooth, faceless mannequin figures (no eyes, no mouth, no hair) in photorealistic scenes.</div></div>
-    <div class="stem"></div><div class="arrow"></div>
-    <div class="node code"><div class="t">Assemble the video <em>code &middot; ffmpeg</em></div>
-      <div class="s">Each 8-second clip is slowed down to cover its full 16-second window. Clips fade into one another, the scene changes exactly when the hosts move to a new story, and the episode audio is laid on top.</div></div>
+  <div class="cols">
+    <div class="flow">
+      <div class="node"><div class="t">Listen to the episode <em>gemini-3.7-flash</em></div>
+        <div class="s">The model listens to the actual audio and writes one plain sentence per window: what the hosts are talking about during those 16 seconds.</div></div>
+      <div class="stem"></div><div class="arrow"></div>
+      <div class="node"><div class="t">One scene per story, one action per window <em>gemma-4-31b-it</em></div>
+        <div class="s">Gemma invents a single scene for each story - the place, the mannequin figure, the props, one accent color. Then, for every window inside that story, it writes what the mannequin is doing at that moment, based on what the hosts are saying right then.</div></div>
+      <div class="stem"></div><div class="arrow"></div>
+      <div class="node"><div class="t">Render one clip per window <em>veo-3.1-fast</em></div>
+        <div class="s">Each window's description becomes its own unique 8-second clip. All clips share one look: smooth, faceless mannequin figures - no eyes, no mouth, no hair.</div></div>
+      <div class="stem"></div><div class="arrow"></div>
+      <div class="node code"><div class="t">Assemble the video <em>code &middot; ffmpeg</em></div>
+        <div class="s">Each clip is slowed to cover its 16-second window. Clips fade into one another, the scene changes exactly when the hosts move to a new story, and the episode audio is laid on top.</div></div>
+    </div>
+    <div class="ex">
+      <div class="xt">Example &middot; story 1: the TLDV database exposure &middot; all text below is real generated output</div>
+      <div class="scene"><b>Gemma's scene for the story:</b> &ldquo;A dark server room where a technician mannequin stands as glowing yellow transcripts spill like a waterfall from an open server rack.&rdquo; Accent: yellow.</div>
+      <div class="lanes"><div class="lane"><div class="said">TLDV exposed meeting metadata in an open database</div><div class="act">a technician mannequin stands as glowing yellow transcripts begin to spill from an open server rack</div><div class="dn">&#8595;</div><div class="clip">clip 1</div></div><div class="lane"><div class="said">scope of the vulnerability across global organizations</div><div class="act">the transcript waterfall grows, flooding the dark server room floor</div><div class="dn">&#8595;</div><div class="clip">clip 2</div></div><div class="lane"><div class="said">ignored security warnings and leaked internal data</div><div class="act">the mannequin remains indifferent as data pours from several open doors</div><div class="dn">&#8595;</div><div class="clip">clip 3</div></div><div class="lane"><div class="said">community outrage over leadership inaction</div><div class="act">other mannequins emerge from the shadows, pointing at the cascading light</div><div class="dn">&#8595;</div><div class="clip">clip 4</div></div><div class="lane"><div class="said">criticisms of the engineering culture and its defaults</div><div class="act">it tries to gather the transcripts; the light flows through its fingers</div><div class="dn">&#8595;</div><div class="clip">clip 5</div></div><div class="lane"><div class="said">transition to the next story</div><div class="act">it turns its back on the waterfall, facing a dim blue light at the exit</div><div class="dn">&#8595;</div><div class="clip">clip 6</div></div></div>
+      <div class="merge">&#8595;&nbsp;&nbsp;six clips, faded together, cover story 1's ~81 seconds exactly</div>
+      <div class="keys"><span class="k1">blue - Gemini's summary of that window's discussion</span><span class="k2">white - Gemma's action for that window</span><span class="k3">orange - the rendered clip</span></div>
+    </div>
   </div>
 </div>
 </body>
