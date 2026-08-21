@@ -28,7 +28,7 @@ Frames from a pipeline-generated video edition - Gemma writes each scene, Veo re
 
 <img src="assets/stills/tldv-waterfall.jpg" width="32%"> <img src="assets/stills/library-dissolve.jpg" width="32%"> <img src="assets/stills/console-stone.jpg" width="32%">
 
-[shownotes/](shownotes/) is a second, deliberately tiny Cloud Run job that runs after the audio pipeline: **Gemma** writes the episode description into the RSS feed. For the video edition, Gemini maps each story's start time from the audio and summarizes what the hosts are saying in each ~10-second window, Gemma writes one scene per story plus a per-window action, **Veo** renders one unique clip per window, and code stitches them under the audio so the visuals follow the conversation. Any failure leaves the feed exactly as the pipeline published it. The job is optional and the video is opt-in via `VIDEO=1` (roughly US$60 per 8-9 minute episode at ~$0.15/s of Veo output; the shownotes step costs pennies; the production deployment currently keeps video off). Deploy guide: [shownotes/README.md](shownotes/README.md).
+[shownotes/](shownotes/) is a second, deliberately tiny Cloud Run job that runs after the audio pipeline: **Gemma** writes the episode description into the RSS feed. For the video edition, Gemini maps each story's start time from the audio and summarizes what the hosts are saying in each ~10-second window, Gemma writes one scene per story plus a per-window action, **Veo** renders one unique clip per window, and code stitches them under the audio so the visuals follow the conversation. Any failure leaves the feed exactly as the pipeline published it. The job is optional and the video is opt-in via `VIDEO=1` (roughly US$60 per 8-9 minute episode at ~$0.15/s of Veo output; the shownotes step costs pennies; the production deployment currently keeps video off). Deploy steps are at the end of the run guide below.
 
 ## Run it yourself, step by step
 
@@ -114,6 +114,60 @@ The goal: from a fresh clone to a real episode running on Cloud Run. Every comma
       --oauth-service-account-email=$SERVICE_ACCOUNT
     ```
 
+### Deploy the post-production job (optional, after the pipeline works)
+
+Same variables as step 2 (plus `$SA` from step 6). Least privilege: the job gets its own service account with only Vertex AI, bucket access, logs, and the API-key secret.
+
+```bash
+cd ../shownotes
+
+# service account with minimum permissions
+gcloud iam service-accounts create hn-shownotes-job
+export JOB_SA=hn-shownotes-job@$PROJECT.iam.gserviceaccount.com
+for role in aiplatform.user logging.logWriter; do
+  gcloud projects add-iam-policy-binding $PROJECT \
+    --member="serviceAccount:$JOB_SA" --role="roles/$role" --condition=None >/dev/null
+done
+gcloud storage buckets add-iam-policy-binding gs://$BUCKET \
+  --member="serviceAccount:$JOB_SA" --role=roles/storage.objectAdmin
+
+# the Gemini API key lives in Secret Manager, not env vars
+gcloud services enable secretmanager.googleapis.com
+printf '%s' "$KEY" | gcloud secrets create gemini-api-key --data-file=-
+gcloud secrets add-iam-policy-binding gemini-api-key \
+  --member="serviceAccount:$JOB_SA" --role=roles/secretmanager.secretAccessor
+
+# build and create the job (shownotes only; append ,VIDEO=1 to the env vars
+# to enable the video edition - Veo costs roughly US$60 per episode)
+gcloud builds submit --tag $REGION-docker.pkg.dev/$PROJECT/pipeline/hn-shownotes \
+  --service-account=projects/$PROJECT/serviceAccounts/$SA \
+  --default-buckets-behavior=regional-user-owned-bucket
+gcloud run jobs create hn-shownotes --region $REGION \
+  --image $REGION-docker.pkg.dev/$PROJECT/pipeline/hn-shownotes \
+  --service-account=$JOB_SA --task-timeout 1800 --memory 4Gi --cpu 2 \
+  --set-env-vars "PUBLISH_BUCKET=$BUCKET,GOOGLE_CLOUD_PROJECT=$PROJECT,GOOGLE_CLOUD_LOCATION=global,PYTHONUNBUFFERED=1" \
+  --set-secrets "GEMINI_API_KEY=gemini-api-key:latest"
+
+# run it for today's episode (the pipeline must have published first)
+gcloud run jobs execute hn-shownotes --region $REGION
+
+# optional: schedule it daily at 6:30 AM PT, after the 6:00 pipeline
+export SERVICE_ACCOUNT=$(gcloud iam service-accounts list --filter="email~compute@developer" --format="value(email)")
+gcloud scheduler jobs create http hn-shownotes-morning \
+  --schedule="30 6 * * *" --time-zone="America/Los_Angeles" \
+  --uri="https://run.googleapis.com/v2/projects/$PROJECT/locations/$REGION/jobs/hn-shownotes:run" \
+  --oauth-service-account-email=$SERVICE_ACCOUNT
+```
+
+Local dry run (shownotes only, no video, costs pennies):
+
+```bash
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+GEMINI_API_KEY=$KEY PUBLISH_BUCKET=$BUCKET GOOGLE_CLOUD_PROJECT=$PROJECT \
+  EPISODE_DATE=YYYY-MM-DD python shownotes.py
+```
+
 ### Environment reference
 
 - `GEMINI_API_KEY`: key for the TTS calls (free tier works)
@@ -149,6 +203,6 @@ The pipeline's stdout is a deliberate data contract. Every stage emits one struc
 | Path | What it is |
 |---|---|
 | [pipeline/](pipeline/) | the entire pipeline |
-| [shownotes/](shownotes/) | post-production job: Gemma shownotes + Veo video edition |
+|  [shownotes/](shownotes/) | post-production job: Gemma shownotes + Veo video edition |
 | [prototypes/replay/](prototypes/replay/) | mission replay page (recorded + live) |
 | [assets/](assets/) | diagram + cover sources and render scripts |
