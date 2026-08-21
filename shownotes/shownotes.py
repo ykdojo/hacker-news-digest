@@ -10,9 +10,10 @@ Two steps, both driven by the day's published script:
    listener-facing episode description, and rewrites that episode's
    <description> in feed.xml.
 2. Video edition (Veo, opt-in, OFF by default - set VIDEO=1): Gemini maps
-   story timestamps from the audio, Gemma writes a mannequin-style Veo scene
-   per story, Veo renders 8s backdrops per story, and
-   ffmpeg stitches them under the audio into episodes/DATE-video.mp4.
+   story timestamps from the audio and summarizes each ~10-second window,
+   Gemma writes a mannequin-style scene per story plus a per-window action,
+   Veo renders one 8s clip per window, and ffmpeg stitches them slowed
+   under the audio into episodes/DATE-video.mp4.
    Skipped if the video already exists (idempotent). Veo dominates the cost;
    the shownotes step alone costs pennies.
 
