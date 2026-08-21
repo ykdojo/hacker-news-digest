@@ -34,7 +34,7 @@ The goal: from a fresh clone to a real episode running on Cloud Run. Every comma
 
 1. **Prereqs**: a Google Cloud project with billing enabled, the `gcloud` CLI logged in (`gcloud auth login && gcloud auth application-default login`), Python 3.12+. Get a Gemini API key (free tier works) from https://aistudio.google.com/apikey for the TTS calls.
 
-   Either a new project or one you already use works. An existing project is the smoother path, since Cloud Build and Vertex AI quota are usually set up already. Everything below works on a new project too.
+   A new project or an existing one both work. An existing one is smoother, since Cloud Build and Vertex AI quota are usually already set up.
 2. **Clone and set variables**:
 
    ```bash
@@ -68,15 +68,14 @@ The goal: from a fresh clone to a real episode running on Cloud Run. Every comma
    DRY_RUN=1 GEMINI_API_KEY=$KEY python run_local.py
    ```
 
-   A virtualenv keeps this off your system Python. On many setups a bare `pip install` either fails with `externally-managed-environment` or `pip` is not on PATH at all. Tip: add `WINDOW_HOURS=3` to look at a shorter slice of Hacker News and cut the dry run's cost and time.
+   Tip: add `WINDOW_HOURS=3` to look at a shorter slice of Hacker News and cut the dry run's cost and time.
 6. **Build and deploy the job**:
 
    ```bash
    gcloud artifacts repositories create pipeline --repository-format=docker --location=$REGION 2>/dev/null || true
 
-   # Give Cloud Build a service account to run as. Safe to re-run on a project
-   # that already builds. New projects need it, since they no longer get the
-   # legacy Cloud Build account automatically.
+   # Give Cloud Build a service account to run as (new projects no longer get
+   # the legacy Cloud Build account automatically). Safe to re-run.
    export SA=$(gcloud iam service-accounts list --filter="email~compute@developer" --format="value(email)")
    for role in cloudbuild.builds.builder artifactregistry.writer storage.admin logging.logWriter; do
      gcloud projects add-iam-policy-binding $PROJECT \
@@ -99,8 +98,8 @@ The goal: from a fresh clone to a real episode running on Cloud Run. Every comma
 
    Watch progress in the Cloud Run console (execution logs), or live-tail it into the replay page (step 9).
 
-   A note on quota. The pipeline digests stories in parallel, so it needs some Vertex AI throughput for `gemini-3.7-flash`. A project you already use for Vertex AI normally has plenty. A brand new project starts with very little, and calls can come back with a 429. If that happens, either request quota for the model or set `WINDOW_HOURS=4` so fewer stories run at once.
-8. **Subscribe**: when the run finishes, paste `https://storage.googleapis.com/$BUCKET/feed.xml` into any podcast app that follows shows by URL (Pocket Casts, Overcast, Apple Podcasts "Follow a Show by URL"). The episode mp3, script, and claim ledger are all in the bucket.
+   A note on quota. The pipeline digests stories in parallel, and a brand new project starts with very little `gemini-3.7-flash` quota, so calls can come back with a 429. If that happens, request quota for the model or set `WINDOW_HOURS=4` so fewer stories run at once.
+8. **Subscribe**: when the run finishes, paste `https://storage.googleapis.com/$BUCKET/feed.xml` into any podcast app that follows shows by URL. The episode mp3, script, and claim ledger are all in the bucket.
 9. **Watch it as a mission replay** (optional, no extra credentials): see [prototypes/replay](prototypes/replay/). `fetch_run.py --date YYYY-MM-DD` rebuilds any past run into an animated replay, and `tail_run.py` live-tails a running one.
 10. **Traces** (optional): with `ENABLE_TRACING=1` set (step 6 sets it), every agent/tool/model step shows up in Cloud Trace: Console > Trace explorer.
 11. **Make it daily** (optional):
@@ -119,7 +118,7 @@ All pipeline knobs (`DRY_RUN`, `WINDOW_HOURS`, `STORY_CHECK`, `ENABLE_TRACING`, 
 
 ## Mission replay
 
-[prototypes/replay/](prototypes/replay/) replays a real production run from the actual Cloud Run logs and claim ledger: the agent graph lights up stage by stage, story lanes show repair rounds, and a rewrite loop fires on camera when a claim fails. Recorded mode replays any past run (`fetch_run.py --date`); live mode tails a run in progress. Tests in [prototypes/replay/testing.md](prototypes/replay/testing.md).
+[prototypes/replay/](prototypes/replay/) replays a real production run from the actual Cloud Run logs and claim ledger. The agent graph lights up stage by stage, story lanes show repair rounds, and a rewrite loop fires on camera when a claim fails. Recorded mode replays any past run, live mode tails a run in progress. Tests in [prototypes/replay/testing.md](prototypes/replay/testing.md).
 
 ```bash
 cd prototypes/replay && python3 -m http.server 8000   # then open http://localhost:8000
