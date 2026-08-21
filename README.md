@@ -30,7 +30,7 @@ Frames from a pipeline-generated video edition - Gemma writes each scene, Veo re
 
 ## Run it yourself, step by step
 
-The goal: from a fresh clone to a real episode running on Cloud Run. Every command is copy-pasteable after setting the four variables in step 2. The pipeline code itself lives in [pipeline/](pipeline/), with a file map in [pipeline/README.md](pipeline/README.md).
+The goal: from a fresh clone to a real episode running on Cloud Run. Every command is copy-pasteable after setting the four variables in step 2. The pipeline code itself lives in [pipeline/](pipeline/).
 
 1. **Prereqs**: a Google Cloud project with billing enabled, the `gcloud` CLI logged in (`gcloud auth login && gcloud auth application-default login`), Python 3.12+. Get a Gemini API key (free tier works) from https://aistudio.google.com/apikey for the TTS calls.
 
@@ -114,7 +114,17 @@ The goal: from a fresh clone to a real episode running on Cloud Run. Every comma
 
 ### Environment reference
 
-All pipeline knobs (`DRY_RUN`, `WINDOW_HOURS`, `STORY_CHECK`, `ENABLE_TRACING`, segmenting and intro-music options) are documented in [pipeline/README.md](pipeline/README.md).
+- `GEMINI_API_KEY`: key for the TTS calls (free tier works)
+- `GOOGLE_GENAI_USE_ENTERPRISE=TRUE` plus application default credentials: for the text models, billed to your Cloud project
+- `GOOGLE_CLOUD_LOCATION=global`
+- `PUBLISH_BUCKET`: Cloud Storage bucket name. Unset writes to `./out` locally
+- `STORY_CHECK=1`: per-story fact-checking. Recommended. It beat script-level-only checking in testing
+- `DRY_RUN=1`: stop before TTS and publishing, for cheap logic tests
+- `ENABLE_TRACING=1`: export agent/tool/model spans to Cloud Trace
+- `WINDOW_HOURS`: lookback window in hours, default 26
+- `SEGMENT_WORDS`: target words per TTS segment, default 160 (about a minute of speech)
+- `SEAM_GAP_MS`: silence inserted between TTS segments, default 350
+- `INTRO_MUSIC=0`: disable the Lyria intro theme, which is on by default. A Lyria failure just skips the music
 
 ## Mission replay
 
@@ -130,11 +140,13 @@ The moment that matters, from a live-tailed run. The fact-check found 2 bad clai
 
 ![Live mode catching the rewrite loop](prototypes/replay/media/shot3-live-rewrite-loop.jpg)
 
+The pipeline's stdout is a deliberate data contract. Every stage emits one structured line, and the replay's parser turns those lines into node states, story lanes, and claim chips. `tail_run.py` polls `gcloud logging read` for the live page, and `fetch_run.py` pulls a finished run's logs plus its published claim ledger. No hooks inside the pipeline, no credentials in the browser.
+
 ## Repo map
 
 | Path | What it is |
 |---|---|
-| [pipeline/](pipeline/) | the entire pipeline + file map |
+| [pipeline/](pipeline/) | the entire pipeline |
 | [shownotes/](shownotes/) | post-production job: Gemma shownotes + Veo video edition |
 | [prototypes/replay/](prototypes/replay/) | mission replay page (recorded + live) |
 | [architecture.md](architecture.md) | system architecture, diagram + text |
