@@ -281,8 +281,8 @@ def story_timestamps(audio_path, stories, duration):
 
 
 def assemble(tmp, clips, plan, boundaries, duration, audio, out):
-    """Encode each sub-clip slowed 2x across its time range, fade between
-    them, concatenate, and mux the episode audio."""
+    """Encode each sub-clip slowed 2x across its time range, fade each in
+    and out, concatenate, and mux the episode audio."""
     from concurrent.futures import ThreadPoolExecutor
     ends = boundaries[1:] + [duration]
     jobs, idx = [], 0
