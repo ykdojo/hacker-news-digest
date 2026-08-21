@@ -42,7 +42,7 @@ Verification runs at two levels. Each story's summary gets its own fact-check wi
 The stack:
 
 - **Google ADK 2** for the agent graph
-- **Gemini 3.7 Flash** through Vertex AI for all text agents
+- **Gemini 3.7 Flash** through Vertex AI for all of the primary job's text agents
 - **Lyria** for the intro theme
 - **multi-speaker Gemini TTS** for the two hosts
 - **Gemma** for shownotes and Veo prompts
