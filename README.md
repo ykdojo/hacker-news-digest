@@ -217,7 +217,7 @@ GEMINI_API_KEY=$KEY PUBLISH_BUCKET=$BUCKET GOOGLE_CLOUD_PROJECT=$PROJECT \
 
 ## Mission replay
 
-[prototypes/replay/](prototypes/replay/) replays a real production run from the actual Cloud Run logs and claim ledger. The agent graph lights up stage by stage, story lanes show repair rounds, and a rewrite loop fires on camera when a claim fails. Recorded mode replays any past run. Live mode tails a run in progress. Tests in [prototypes/replay/testing.md](prototypes/replay/testing.md).
+[prototypes/replay/](prototypes/replay/) replays a real production run from the actual Cloud Run logs and claim ledger. The agent graph lights up stage by stage, story lanes show repair rounds, and a rewrite loop fires when a claim fails. Recorded mode replays any past run. Live mode tails a run in progress. Tests in [prototypes/replay/testing.md](prototypes/replay/testing.md).
 
 ```bash
 cd prototypes/replay && python3 -m http.server 8000   # then open http://localhost:8000
@@ -225,7 +225,7 @@ cd prototypes/replay && python3 -m http.server 8000   # then open http://localho
 
 ![Replay of the real Aug 11 production run, 4x speed](prototypes/replay/media/replay.gif)
 
-The moment that matters, from a live-tailed run. The fact-check found 2 bad claims (the red chips), the router went amber, and REWRITE #1 fired, all while the run was still going:
+An example from a live-tailed run. The fact-check found 2 bad claims (the red chips), the router went amber, and REWRITE #1 fired, all while the run was still going:
 
 ![Live mode catching the rewrite loop](prototypes/replay/media/shot3-live-rewrite-loop.jpg)
 
