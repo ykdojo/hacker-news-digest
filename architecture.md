@@ -2,7 +2,7 @@
 
 The diagram submitted to Devpost is [assets/architecture-combined.png](assets/architecture-combined.png): the system diagram ([assets/architecture-diagram.html](assets/architecture-diagram.html), rendered via `python3 assets/render_architecture.py`) stitched above the video-edition flow strip ([assets/architecture-video-strip.html](assets/architecture-video-strip.html)). Devpost requires the diagram as an uploaded file, not as a description, and it shares the dark cover style used for the article.
 
-![System architecture](assets/architecture.png)
+![System architecture](assets/architecture-combined.png)
 
 The per-node agent graphs (7 diagrams) are in the [article](https://medium.com/google-cloud/turning-hacker-news-into-a-daily-podcast-with-adk-2-gemini-tts-and-cloud-run-jobs-02c2d53fdcf2). This is the system-level picture the submission rules ask for.
 
