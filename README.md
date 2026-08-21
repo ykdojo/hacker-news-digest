@@ -16,11 +16,41 @@ Built for the [All Things Agentic Hackathon](https://allthingsagentichackathon.d
 
 ![System architecture](assets/architecture-combined.png)
 
-Deterministic code owns the graph structure. It also handles fetching the stories and their linked articles, scoring them, the claim ledger (the record of every checked claim, published with each episode), routing between stages, text-to-speech (TTS) rendering, and publishing. Models own only what needs judgment: picking the stories, generating summaries, writing the script, extracting claims, and deciding fact-check verdicts. Every model output is validated against a schema with Pydantic structured outputs.
+Deterministic code owns the structure of the ADK agent graph. It also handles:
+
+- fetching the stories and their linked articles
+- scoring them
+- the claim ledger (the record of every checked claim, published with each episode)
+- routing between stages
+- text-to-speech (TTS) rendering
+- publishing
+
+Models own only what needs judgment:
+
+- picking the stories
+- generating summaries
+- writing the script
+- extracting claims
+- deciding fact-check verdicts
+
+Every model output is validated against a schema with Pydantic structured outputs.
 
 Verification runs at two levels. Each story's summary gets its own fact-check with up to 2 repair rounds. Then the finished script goes through a claim-by-claim check with a rewrite loop. A segment that still fails is cut rather than aired. And because every episode publishes its claim ledger next to the audio, any line of the show traces back to a verified claim.
 
-Stack: **Google ADK 2** for the agent graph, **Gemini 3.7 Flash** through Vertex AI for all text agents, **Lyria** for the intro theme, **multi-speaker Gemini TTS** for the two hosts, **Gemma** for shownotes and Veo prompts, **Veo** for the video edition, plus **Cloud Run jobs**, **Cloud Scheduler**, **Cloud Storage**, **Secret Manager**, and **Cloud Logging** + **Cloud Trace** for logs and per-step traces. Both jobs run on dedicated least-privilege service accounts. The TTS step is the one call that uses the Gemini API with an API key instead of Vertex AI, because the multi-speaker preview voices are served there.
+The stack:
+
+- **Google ADK 2** for the agent graph
+- **Gemini 3.7 Flash** through Vertex AI for all text agents
+- **Lyria** for the intro theme
+- **multi-speaker Gemini TTS** for the two hosts
+- **Gemma** for shownotes and Veo prompts
+- **Veo** for the video edition
+- **Cloud Run jobs** and **Cloud Scheduler** to run it daily
+- **Cloud Storage** to host the feed and episodes
+- **Secret Manager** for the API key
+- **Cloud Logging** and **Cloud Trace** for logs and per-step traces
+
+Both jobs run on dedicated least-privilege service accounts. The TTS step is the one call that uses the Gemini API with an API key instead of Vertex AI, because the multi-speaker preview voices are served there.
 
 The pipeline job is stateless and run-to-completion. There are no servers between runs. A failed run costs one execution, and the idle system costs nothing.
 
