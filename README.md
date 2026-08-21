@@ -2,7 +2,9 @@
 
 A fully automated system that generates a daily podcast summarizing Hacker News, with fact-checking loops to ensure accuracy.
 
-Every morning at 6 AM Pacific, a Cloud Run job reads the last 26 hours of Hacker News and picks the stories worth talking about. It summarizes and fact-checks each story against the linked articles and comment threads, then writes a two-host script. Lyria composes an intro theme to match the day's headlines, multi-speaker Gemini TTS generates the audio, and the job publishes the episode to a public RSS feed you can follow in any podcast app. A post-production job then runs at 6:30. Gemma writes the episode's description into the podcast feed. For the video edition, Gemini listens to the episode, and based on that, Gemma turns each story into a series of video prompts that Veo can use.
+Every morning at 6 AM Pacific, a Cloud Run job reads the last 26 hours of Hacker News and picks the stories worth talking about. It summarizes and fact-checks each story against the linked articles and comment threads, then writes a two-host script. Lyria composes an intro theme to match the day's headlines, multi-speaker Gemini TTS generates the audio, and the job publishes the episode to a public RSS feed you can follow in any podcast app.
+
+A post-production job then runs at 6:30. Gemma writes the episode's description into the podcast feed. For the video edition, Gemini listens to the episode, and based on that, Gemma turns each story into a series of video prompts that Veo can use.
 
 - **Listen / demo page**: https://ykdojo.github.io/awesome-agents-on-google-cloud/hn-podcast-demo/
 - **Write-up**: [Turning Hacker News into a daily podcast with ADK 2, Gemini TTS, and Cloud Run jobs](https://medium.com/google-cloud/turning-hacker-news-into-a-daily-podcast-with-adk-2-gemini-tts-and-cloud-run-jobs-02c2d53fdcf2)
