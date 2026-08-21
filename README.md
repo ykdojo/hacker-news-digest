@@ -61,7 +61,7 @@ Frames from a pipeline-generated video edition - Gemma writes each scene, Veo re
 
 [shownotes/](shownotes/) is a second Cloud Run job that runs after the audio pipeline. Gemma writes the episode description into the RSS feed, and Veo renders the optional video edition. The mechanics are in the diagram above. Any failure leaves the feed exactly as the pipeline published it.
 
-The video is opt-in via `VIDEO=1` and costs roughly US$60 per episode, almost all of it Veo rendering. The shownotes step costs pennies. The production deployment currently keeps video off. Deploy steps are at the end of the run guide below.
+The video is opt-in via `VIDEO=1` and costs roughly US$60 per episode, almost all of it Veo rendering. The shownotes step costs pennies.
 
 ## Run it yourself, step by step
 
