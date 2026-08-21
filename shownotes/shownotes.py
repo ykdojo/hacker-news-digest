@@ -44,7 +44,18 @@ GEMMA_MODEL = os.environ.get("GEMMA_MODEL", "gemma-4-31b-it")
 VEO_MODEL = os.environ.get("VEO_MODEL", "veo-3.1-fast-generate-001")
 VIDEO = os.environ.get("VIDEO", "0") == "1"
 SLOW = 2.0                       # slow-motion factor: 8s of footage covers 16s
-COVER = 8.0 * SLOW
+COVER = 8.0 * SLOW               # hard ceiling per clip
+WINDOW_TARGET = float(os.environ.get("WINDOW_TARGET", "10"))  # preferred window length
+
+
+def story_windows(start, end):
+    """Uniform windows of ~WINDOW_TARGET seconds (never over COVER, and never
+    a sub-second remainder): the story's duration is split evenly."""
+    import math
+    dur = end - start
+    n = max(1, round(dur / WINDOW_TARGET), math.ceil(dur / COVER))
+    w = dur / n
+    return [(start + k * w, start + (k + 1) * w) for k in range(n)]
 DATE = os.environ.get("EPISODE_DATE") or datetime.datetime.now(
     ZoneInfo("America/Los_Angeles")).strftime("%Y-%m-%d")
 
@@ -131,8 +142,8 @@ The story's consecutive moments are:
 {notes}
 
 For EACH moment write ONE line (under 30 words): the same setting and the same
-faceless mannequin figure(s) continuing the scene, with the action subtly
-reflecting that moment. Keep strict visual continuity. No text, no logos.
+faceless mannequin figure(s) continuing the scene, with an action that clearly
+depicts the specific thing being discussed at that moment. Keep strict visual continuity. No text, no logos.
 Output exactly {n} lines, in order, formatted 'N. <line>' with nothing else.
 """
 
@@ -275,12 +286,8 @@ def assemble(tmp, clips, plan, boundaries, duration, audio, out):
     ends = boundaries[1:] + [duration]
     jobs, idx = [], 0
     for seg, (start, end) in enumerate(zip(boundaries, ends)):
-        remaining = end - start
-        n = sum(1 for sp in plan if sp == seg)
-        for k in range(n):
-            d = min(COVER, remaining) if k < n - 1 else max(remaining, 0.5)
-            remaining -= d
-            jobs.append((idx, d)); idx += 1
+        for a, b in story_windows(start, end):
+            jobs.append((idx, b - a)); idx += 1
 
     def encode(job):
         i, d = job
@@ -341,9 +348,8 @@ def make_video(bucket, client, script, stories):
         ends = boundaries[1:] + [duration]
         windows = []
         for seg, (start, end) in enumerate(zip(boundaries, ends)):
-            n = max(1, math.ceil((end - start) / COVER))
-            for k in range(n):
-                windows.append((seg, start + k * COVER, min(start + (k + 1) * COVER, end)))
+            for a, b in story_windows(start, end):
+                windows.append((seg, a, b))
         beats = {}
         try:
             from google.genai import types as gtypes
