@@ -22,7 +22,6 @@ Deterministic code owns the structure of the ADK agent graph. It also handles:
 - scoring them
 - the claim ledger (the record of every checked claim, published with each episode)
 - routing between stages
-- text-to-speech (TTS) rendering
 - publishing
 
 Models own only what needs judgment:
