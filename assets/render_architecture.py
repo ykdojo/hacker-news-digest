@@ -22,7 +22,7 @@ OUT_PNG = ROOT / "assets" / "architecture.png"
 CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 
 # Must match .cover in architecture-diagram.html: Chrome captures exactly this window.
-WIDTH, HEIGHT = 1600, 2010
+WIDTH, HEIGHT = 1600, 2080
 
 
 def main() -> None:
