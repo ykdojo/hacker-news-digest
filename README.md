@@ -16,13 +16,13 @@ Built for the [All Things Agentic Hackathon](https://allthingsagentichackathon.d
 
 ![System architecture](assets/architecture-combined.png)
 
-Deterministic code owns the graph structure, fetching, scoring, the claim ledger, routing, TTS, the intro-music mix, and publishing. Models own only what needs judgment: curation, digests, script-writing, claim extraction, fact-check verdicts, and the intro-music prompt. Every model output is schema-validated with Pydantic structured outputs.
+Deterministic code owns the graph structure. It also handles fetching the stories and their linked articles, scoring them, the claim ledger (the record of every checked claim, published with each episode), routing between stages, text-to-speech (TTS) rendering, and publishing. Models own only what needs judgment: picking the stories, generating summaries, writing the script, extracting claims, and deciding fact-check verdicts. Every model output is validated against a schema with Pydantic structured outputs.
 
-Verification runs at two levels: each story digest gets its own fact-check lane with up to 2 repair rounds, and the finished script goes through a claim-by-claim check with a rewrite loop. A segment that still fails verification is cut rather than aired, and every episode publishes its claim ledger next to the audio so any line of the show traces back to a verified claim.
+Verification runs at two levels. Each story's summary gets its own fact-check with up to 2 repair rounds. Then the finished script goes through a claim-by-claim check with a rewrite loop. A segment that still fails is cut rather than aired. And because every episode publishes its claim ledger next to the audio, any line of the show traces back to a verified claim.
 
-Stack: **Google ADK 2** (graph workflow with dynamic per-story fan-out), **Gemini 3.7 Flash** through Vertex AI for all text agents, **Lyria** through Vertex AI for a daily instrumental intro theme, **multi-speaker Gemini TTS** through the Gemini API for the two hosts, **Gemma** through the Gemini API for shownotes and Veo prompts, **Veo** through Vertex AI for the video edition's backdrops, **Cloud Run jobs** + **Cloud Scheduler**, **Cloud Storage**, **Secret Manager**, **Cloud Logging** + **Cloud Trace** (OpenTelemetry spans for every agent, tool, and model call). Both jobs run on dedicated least-privilege service accounts. The TTS step is the one call that uses the Gemini API with an API key instead of Vertex AI, because the multi-speaker preview voices are served there.
+Stack: **Google ADK 2** for the agent graph, **Gemini 3.7 Flash** through Vertex AI for all text agents, **Lyria** for the intro theme, **multi-speaker Gemini TTS** for the two hosts, **Gemma** for shownotes and Veo prompts, **Veo** for the video edition, plus **Cloud Run jobs**, **Cloud Scheduler**, **Cloud Storage**, **Secret Manager**, and **Cloud Logging** + **Cloud Trace** for logs and per-step traces. Both jobs run on dedicated least-privilege service accounts. The TTS step is the one call that uses the Gemini API with an API key instead of Vertex AI, because the multi-speaker preview voices are served there.
 
-The pipeline job is stateless and run-to-completion. There are no servers between runs, so a failed run costs one execution rather than a standing service, and the idle system costs nothing.
+The pipeline job is stateless and run-to-completion. There are no servers between runs. A failed run costs one execution, and the idle system costs nothing.
 
 ### Post-production job
 
@@ -30,7 +30,7 @@ Frames from a pipeline-generated video edition - Gemma writes each scene, Veo re
 
 <img src="assets/stills/tldv-waterfall.jpg" width="32%"> <img src="assets/stills/library-dissolve.jpg" width="32%"> <img src="assets/stills/console-stone.jpg" width="32%">
 
-[shownotes/](shownotes/) is a second, deliberately tiny Cloud Run job that runs after the audio pipeline: **Gemma** writes the episode description into the RSS feed. For the video edition, Gemini maps each story's start time from the audio and summarizes what the hosts are saying in each ~10-second window, Gemma writes one scene per story plus a per-window action, **Veo** renders one unique clip per window, and code stitches them under the audio so the visuals follow the conversation. Any failure leaves the feed exactly as the pipeline published it. The job is optional and the video is opt-in via `VIDEO=1` (roughly US$60 per 8-9 minute episode at ~$0.15/s of Veo output; the shownotes step costs pennies; the production deployment currently keeps video off). Deploy steps are at the end of the run guide below.
+[shownotes/](shownotes/) is a second, deliberately tiny Cloud Run job that runs after the audio pipeline. Gemma writes the episode description into the RSS feed. For the video edition, Gemini listens to the audio to find where each story starts and what the hosts are saying in each ~10-second window. Gemma then writes one scene per story plus an action per window, Veo renders one unique clip per window, and code stitches the clips under the audio so the visuals follow the conversation. Any failure leaves the feed exactly as the pipeline published it. The job is optional, and the video is opt-in via `VIDEO=1`. Video costs roughly US$60 per episode, almost all of it Veo rendering, while the shownotes step costs pennies. The production deployment currently keeps video off. Deploy steps are at the end of the run guide below.
 
 ## Run it yourself, step by step
 
@@ -102,7 +102,7 @@ The goal: from a fresh clone to a real episode running on Cloud Run. Every comma
 
    Watch progress in the Cloud Run console (execution logs), or live-tail it into the replay page (step 9).
 
-   A note on quota. The pipeline digests stories in parallel, and a brand new project starts with very little `gemini-3.7-flash` quota, so calls can come back with a 429. If that happens, request quota for the model or set `WINDOW_HOURS=4` so fewer stories run at once.
+   A note on quota. The pipeline summarizes stories in parallel, and a brand new project starts with very little `gemini-3.7-flash` quota, so calls can come back with a 429 error. If that happens, request quota for the model or set `WINDOW_HOURS=4` so fewer stories run at once.
 8. **Subscribe**: when the run finishes, paste `https://storage.googleapis.com/$BUCKET/feed.xml` into any podcast app that follows shows by URL. The episode mp3, script, and claim ledger are all in the bucket.
 9. **Watch it as a mission replay** (optional, no extra credentials): see [prototypes/replay](prototypes/replay/). `fetch_run.py --date YYYY-MM-DD` rebuilds any past run into an animated replay, and `tail_run.py` live-tails a running one.
 10. **Traces** (optional): with `ENABLE_TRACING=1` set (step 6 sets it), every agent/tool/model step shows up in Cloud Trace: Console > Trace explorer.
@@ -186,7 +186,7 @@ GEMINI_API_KEY=$KEY PUBLISH_BUCKET=$BUCKET GOOGLE_CLOUD_PROJECT=$PROJECT \
 
 ## Mission replay
 
-[prototypes/replay/](prototypes/replay/) replays a real production run from the actual Cloud Run logs and claim ledger. The agent graph lights up stage by stage, story lanes show repair rounds, and a rewrite loop fires on camera when a claim fails. Recorded mode replays any past run, live mode tails a run in progress. Tests in [prototypes/replay/testing.md](prototypes/replay/testing.md).
+[prototypes/replay/](prototypes/replay/) replays a real production run from the actual Cloud Run logs and claim ledger. The agent graph lights up stage by stage, story lanes show repair rounds, and a rewrite loop fires on camera when a claim fails. Recorded mode replays any past run. Live mode tails a run in progress. Tests in [prototypes/replay/testing.md](prototypes/replay/testing.md).
 
 ```bash
 cd prototypes/replay && python3 -m http.server 8000   # then open http://localhost:8000
@@ -198,7 +198,7 @@ The moment that matters, from a live-tailed run. The fact-check found 2 bad clai
 
 ![Live mode catching the rewrite loop](prototypes/replay/media/shot3-live-rewrite-loop.jpg)
 
-The pipeline's stdout is a deliberate data contract. Every stage emits one structured line, and the replay's parser turns those lines into node states, story lanes, and claim chips. `tail_run.py` polls `gcloud logging read` for the live page, and `fetch_run.py` pulls a finished run's logs plus its published claim ledger. No hooks inside the pipeline, no credentials in the browser.
+The pipeline's stdout is a deliberate data contract. Every stage prints one structured line, and the replay's parser turns those lines into the animated graph. `tail_run.py` polls `gcloud logging read` for the live page. `fetch_run.py` pulls a finished run's logs plus its published claim ledger. No hooks inside the pipeline, no credentials in the browser.
 
 ## Repo map
 
