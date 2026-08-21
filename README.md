@@ -92,7 +92,7 @@ The goal: from a fresh clone to a real episode running on Cloud Run. Every comma
      --set-env-vars "GOOGLE_GENAI_USE_ENTERPRISE=TRUE,GOOGLE_CLOUD_LOCATION=global,GOOGLE_CLOUD_PROJECT=$PROJECT,PUBLISH_BUCKET=$BUCKET,STORY_CHECK=1,ENABLE_TRACING=1,PYTHONUNBUFFERED=1,GEMINI_API_KEY=$KEY"
    ```
 
-7. **Run it** (~30 min, ~US$2-3 in model calls):
+7. **Run it** (~14-18 min, ~US$2-3 in model calls):
 
    ```bash
    gcloud run jobs execute hn-digest --region $REGION
