@@ -229,7 +229,7 @@ An example from a live-tailed run. The fact-check found 2 bad claims (the red ch
 
 ![Live mode catching the rewrite loop](prototypes/replay/media/shot3-live-rewrite-loop.jpg)
 
-The pipeline's stdout is a deliberate data contract. Every stage prints one structured line, and the replay's parser turns those lines into the animated graph. `tail_run.py` polls `gcloud logging read` for the live page. `fetch_run.py` pulls a finished run's logs plus its published claim ledger. No hooks inside the pipeline, no credentials in the browser.
+The replay needs no hooks inside the pipeline and no credentials in the browser. It rebuilds everything from the run's own logs, either live or after the fact.
 
 ## Repo map
 
