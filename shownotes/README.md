@@ -2,9 +2,10 @@
 
 Optional second Cloud Run job ([shownotes.py](shownotes.py)): Gemma writes each
 episode's description into the RSS feed; with `VIDEO=1` it also produces the
-video edition (Gemini maps story timestamps from the audio, Gemma writes a Veo
-prompt per story, Veo renders 8-second backdrops, ffmpeg stitches them
-under the audio). Any failure leaves the feed exactly
+video edition (Gemini maps story timestamps from the audio and summarizes each
+~10-second window, Gemma writes one scene per story plus a per-window action,
+Veo renders one 8-second clip per window, ffmpeg stitches them slowed under
+the audio; roughly US$60 per episode). Any failure leaves the feed exactly
 as the pipeline published it. See the [main README](../README.md) for what it
 does and the [architecture notes](../architecture.md) for how it fits.
 
@@ -31,14 +32,15 @@ printf '%s' "$KEY" | gcloud secrets create gemini-api-key --data-file=-
 gcloud secrets add-iam-policy-binding gemini-api-key \
   --member="serviceAccount:$JOB_SA" --role=roles/secretmanager.secretAccessor
 
-# build and create the job (video edition on; drop VIDEO=1 for shownotes only)
+# build and create the job (shownotes only; append ,VIDEO=1 to the env vars
+# to enable the video edition - Veo costs roughly US$60 per episode)
 gcloud builds submit --tag $REGION-docker.pkg.dev/$PROJECT/pipeline/hn-shownotes \
   --service-account=projects/$PROJECT/serviceAccounts/$SA \
   --default-buckets-behavior=regional-user-owned-bucket
 gcloud run jobs create hn-shownotes --region $REGION \
   --image $REGION-docker.pkg.dev/$PROJECT/pipeline/hn-shownotes \
   --service-account=$JOB_SA --task-timeout 1800 --memory 4Gi --cpu 2 \
-  --set-env-vars "PUBLISH_BUCKET=$BUCKET,GOOGLE_CLOUD_PROJECT=$PROJECT,GOOGLE_CLOUD_LOCATION=global,PYTHONUNBUFFERED=1,VIDEO=1" \
+  --set-env-vars "PUBLISH_BUCKET=$BUCKET,GOOGLE_CLOUD_PROJECT=$PROJECT,GOOGLE_CLOUD_LOCATION=global,PYTHONUNBUFFERED=1" \
   --set-secrets "GEMINI_API_KEY=gemini-api-key:latest"
 
 # run it for today's episode (the pipeline must have published first)

@@ -26,7 +26,7 @@ Frames from a pipeline-generated video edition - Gemma writes each scene, Veo re
 
 <img src="assets/stills/tldv-waterfall.jpg" width="32%"> <img src="assets/stills/library-dissolve.jpg" width="32%"> <img src="assets/stills/console-stone.jpg" width="32%">
 
-[shownotes/](shownotes/) is a second, deliberately tiny Cloud Run job that runs after the audio pipeline: **Gemma** writes the episode description into the RSS feed, Gemini maps each story's start time from the audio, Gemma writes a Veo prompt per story, **Veo** renders per-story backdrops, and code stitches them under the audio into a video edition. Any failure leaves the feed exactly as the pipeline published it. The job is optional and the video is opt-in via `VIDEO=1` (~US$20/episode; the shownotes step costs pennies; the production deployment runs with it on). Deploy guide: [shownotes/README.md](shownotes/README.md).
+[shownotes/](shownotes/) is a second, deliberately tiny Cloud Run job that runs after the audio pipeline: **Gemma** writes the episode description into the RSS feed. For the video edition, Gemini maps each story's start time from the audio and summarizes what the hosts are saying in each ~10-second window, Gemma writes one scene per story plus a per-window action, **Veo** renders one unique clip per window, and code stitches them under the audio so the visuals follow the conversation. Any failure leaves the feed exactly as the pipeline published it. The job is optional and the video is opt-in via `VIDEO=1` (roughly US$60 per 8-9 minute episode at ~$0.15/s of Veo output; the shownotes step costs pennies; the production deployment currently keeps video off). Deploy guide: [shownotes/README.md](shownotes/README.md).
 
 ## Run it yourself, step by step
 
