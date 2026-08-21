@@ -18,7 +18,9 @@ Deterministic code owns the graph structure, fetching, scoring, the claim ledger
 
 Verification runs at two levels: each story digest gets its own fact-check lane with up to 2 repair rounds, and the finished script goes through a claim-by-claim check with a rewrite loop. A segment that still fails verification is cut rather than aired, and every episode publishes its claim ledger next to the audio so any line of the show traces back to a verified claim.
 
-Stack: **Google ADK 2** (graph workflow with dynamic per-story fan-out), **Gemini 3.7 Flash** through Vertex AI for all text agents, **Lyria** through Vertex AI for a daily instrumental intro theme, **multi-speaker Gemini TTS** through the Gemini API for the two hosts, **Gemma** through the Gemini API for shownotes and Veo prompts, **Veo** through Vertex AI for the video edition's backdrops, **Cloud Run jobs** + **Cloud Scheduler**, **Cloud Storage**, **Secret Manager**, **Cloud Logging** + **Cloud Trace** (OpenTelemetry spans for every agent, tool, and model call). Both jobs run on dedicated least-privilege service accounts. More detail in [architecture.md](architecture.md).
+Stack: **Google ADK 2** (graph workflow with dynamic per-story fan-out), **Gemini 3.7 Flash** through Vertex AI for all text agents, **Lyria** through Vertex AI for a daily instrumental intro theme, **multi-speaker Gemini TTS** through the Gemini API for the two hosts, **Gemma** through the Gemini API for shownotes and Veo prompts, **Veo** through Vertex AI for the video edition's backdrops, **Cloud Run jobs** + **Cloud Scheduler**, **Cloud Storage**, **Secret Manager**, **Cloud Logging** + **Cloud Trace** (OpenTelemetry spans for every agent, tool, and model call). Both jobs run on dedicated least-privilege service accounts. The TTS step is the one call that uses the Gemini API with an API key instead of Vertex AI, because the multi-speaker preview voices are served there.
+
+The pipeline job is stateless and run-to-completion. There are no servers between runs, so a failed run costs one execution rather than a standing service, and the idle system costs nothing.
 
 ### Post-production job
 
@@ -149,5 +151,4 @@ The pipeline's stdout is a deliberate data contract. Every stage emits one struc
 | [pipeline/](pipeline/) | the entire pipeline |
 | [shownotes/](shownotes/) | post-production job: Gemma shownotes + Veo video edition |
 | [prototypes/replay/](prototypes/replay/) | mission replay page (recorded + live) |
-| [architecture.md](architecture.md) | system architecture, diagram + text |
 | [assets/](assets/) | diagram + cover sources and render scripts |

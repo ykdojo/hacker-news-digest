@@ -7,7 +7,7 @@ video edition (Gemini maps story timestamps from the audio and summarizes each
 Veo renders one 8-second clip per window, ffmpeg stitches them slowed under
 the audio; roughly US$60 per episode). Any failure leaves the feed exactly
 as the pipeline published it. See the [main README](../README.md) for what it
-does and the [architecture notes](../architecture.md) for how it fits.
+does and how it fits.
 
 ## Deploy (optional, after the pipeline works)
 
