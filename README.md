@@ -31,6 +31,9 @@ Models own only what needs judgment:
 - writing the script
 - extracting claims
 - deciding fact-check verdicts
+- composing the intro theme (Lyria)
+- voicing the two hosts (text-to-speech)
+- rendering the video edition's clips (Veo)
 
 Every model output is validated against a schema with Pydantic structured outputs.
 
