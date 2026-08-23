@@ -228,7 +228,7 @@ cd replay && python3 -m http.server 8000   # then open http://localhost:8000
 
 ![Replay of the real Aug 11 production run, 4x speed](replay/media/replay.gif)
 
-An example from a live-tailed run. The fact-check found 2 bad claims (the red chips) and REWRITE #1 fired, all while the run was still going:
+An example from a live-tailed run. The fact-check found 2 bad claims (the red chips) and REWRITE #1 fired:
 
 ![Live mode catching the rewrite loop](replay/media/shot3-live-rewrite-loop.jpg)
 
