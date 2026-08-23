@@ -204,7 +204,7 @@ GEMINI_API_KEY=$KEY PUBLISH_BUCKET=$BUCKET GOOGLE_CLOUD_PROJECT=$PROJECT \
 
 - `GEMINI_API_KEY`: key for the TTS calls (free tier works)
 - `GOOGLE_GENAI_USE_ENTERPRISE=TRUE` plus application default credentials: for the text models, billed to your Cloud project
-- `GOOGLE_CLOUD_LOCATION=global`
+- `GOOGLE_CLOUD_LOCATION=global`: which Vertex AI endpoint serves the text-model calls. The global endpoint has the best model availability; a specific region also works if you need data residency
 - `PUBLISH_BUCKET`: Cloud Storage bucket name. Unset writes to `./out` locally
 - `STORY_CHECK=1`: per-story fact-checking. Recommended. It beat script-level-only checking in testing
 - `DRY_RUN=1`: stop before TTS and publishing, for cheap logic tests
