@@ -28,8 +28,7 @@ Models own only what needs judgment:
 - picking the 7-10 stories for the episode out of the candidate pool
 - generating summaries
 - writing the script
-- extracting claims
-- deciding fact-check verdicts
+- extracting claims and fact-checking them
 - composing the intro theme (Lyria)
 - voicing the two hosts (text-to-speech)
 - rendering the video edition's clips (Veo)
