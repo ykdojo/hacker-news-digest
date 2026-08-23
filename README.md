@@ -92,6 +92,9 @@ The goal: from a fresh clone to a real episode running on Cloud Run. Every comma
    gcloud storage buckets create gs://$BUCKET --location=$REGION
    gcloud storage buckets add-iam-policy-binding gs://$BUCKET \
      --member=allUsers --role=roles/storage.objectViewer
+
+   # podcast cover art; the generated feed points podcast apps at $BUCKET/cover.png
+   gcloud storage cp ../assets/cover.png gs://$BUCKET/cover.png
    ```
 
 5. **Quick local test first**. A dry run executes the full text pipeline: fetching and curating stories, digesting them, writing the script, and fact-checking the claims. No TTS and no publishing. Edit `PROJECT` at the top of `run_local.py`, then:
