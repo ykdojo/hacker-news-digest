@@ -217,7 +217,7 @@ GEMINI_API_KEY=$KEY PUBLISH_BUCKET=$BUCKET GOOGLE_CLOUD_PROJECT=$PROJECT \
 
 ## Mission replay
 
-[replay/](replay/) replays a real production run from the actual Cloud Run logs and claim ledger. The agent graph lights up stage by stage, story lanes show repair rounds, and a rewrite loop fires when a claim fails. Recorded mode replays any past run. Live mode tails a run in progress. Tests in [replay/testing.md](replay/testing.md).
+[replay/](replay/) replays a real production run from the actual Cloud Run logs and claim ledger. The agent graph lights up stage by stage. Recorded mode replays any past run. Live mode tails a run in progress.
 
 ```bash
 cd replay && python3 -m http.server 8000   # then open http://localhost:8000
