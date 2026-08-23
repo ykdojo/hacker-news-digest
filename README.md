@@ -229,8 +229,6 @@ An example from a live-tailed run. The fact-check found 2 bad claims (the red ch
 
 ![Live mode catching the rewrite loop](replay/media/shot3-live-rewrite-loop.jpg)
 
-The replay needs no hooks inside the pipeline and no credentials in the browser. It rebuilds everything from the run's own logs, either live or after the fact.
-
 ## Repo map
 
 | Path | What it is |
