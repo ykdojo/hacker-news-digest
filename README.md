@@ -54,7 +54,7 @@ Both jobs run on dedicated least-privilege service accounts. The TTS step is the
 
 ### Post-production job
 
-Frames from a pipeline-generated video edition - Gemma writes each scene, Veo renders it:
+Frames from a video edition - Gemma writes each scene, Veo renders it:
 
 <img src="assets/stills/tldv-waterfall.jpg" width="32%"> <img src="assets/stills/library-dissolve.jpg" width="32%"> <img src="assets/stills/console-stone.jpg" width="32%">
 
