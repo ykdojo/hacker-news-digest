@@ -33,7 +33,7 @@ Models own only what needs judgment:
 - voicing the two hosts (text-to-speech)
 - rendering the video edition's clips (Veo)
 
-Every model output is validated against a schema with Pydantic structured outputs.
+Every text output in the primary pipeline (all Gemini Flash) is validated against a schema with Pydantic structured outputs.
 
 Verification runs at two levels. Each story's summary gets its own fact-check with up to 2 repair rounds. Then the finished script goes through a claim-by-claim check with a rewrite loop. A segment that still fails is cut rather than aired.
 
