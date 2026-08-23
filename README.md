@@ -52,8 +52,6 @@ The stack:
 
 Both jobs run on dedicated least-privilege service accounts. The TTS step is the one call that uses the Gemini API with an API key instead of Vertex AI, because the multi-speaker preview voices are served there.
 
-The pipeline job is stateless and run-to-completion. There are no servers between runs. A failed run costs one execution, and the idle system costs nothing.
-
 ### Post-production job
 
 Frames from a pipeline-generated video edition - Gemma writes each scene, Veo renders it:
