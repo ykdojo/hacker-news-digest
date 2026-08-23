@@ -4,7 +4,7 @@ Everything here runs **without ever executing the pipeline**. The fixtures are
 real artifacts from the Aug 11 2026 autonomous run: `fixtures/2026-08-11.log`
 (actual Cloud Run log lines, including a real retry traceback as noise),
 `2026-08-11-ledger.json` (the 50-claim fact-check ledger from GCS), and
-`titles.json` (HN API titles). All commands run from `prototypes/replay/`.
+`titles.json` (HN API titles). All commands run from `replay/`.
 
 ## Level 1: unit + integration (Python, no browser)
 

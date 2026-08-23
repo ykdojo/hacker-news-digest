@@ -134,7 +134,7 @@ The goal: from a fresh clone to a real episode running on Cloud Run. Every comma
 
    A note on quota. The pipeline summarizes stories in parallel, and a brand new project starts with very little `gemini-3.7-flash` quota, so calls can come back with a 429 error. If that happens, request quota for the model or set `MAX_PICKS=3` so fewer stories are summarized in parallel.
 8. **Subscribe**: when the run finishes, paste `https://storage.googleapis.com/$BUCKET/feed.xml` into any podcast app that follows shows by URL. The episode mp3, script, and claim ledger are all in the bucket.
-9. **Watch it as a mission replay** (optional, no extra credentials): see [prototypes/replay](prototypes/replay/). `fetch_run.py --date YYYY-MM-DD` rebuilds any past run into an animated replay, and `tail_run.py` live-tails a running one.
+9. **Watch it as a mission replay** (optional, no extra credentials): see [replay](replay/). `fetch_run.py --date YYYY-MM-DD` rebuilds any past run into an animated replay, and `tail_run.py` live-tails a running one.
 10. **Traces** (optional): with `ENABLE_TRACING=1` set (step 6 sets it), every agent/tool/model step shows up in Cloud Trace: Console > Trace explorer.
 11. **Make it daily** (optional):
 
@@ -217,17 +217,17 @@ GEMINI_API_KEY=$KEY PUBLISH_BUCKET=$BUCKET GOOGLE_CLOUD_PROJECT=$PROJECT \
 
 ## Mission replay
 
-[prototypes/replay/](prototypes/replay/) replays a real production run from the actual Cloud Run logs and claim ledger. The agent graph lights up stage by stage, story lanes show repair rounds, and a rewrite loop fires when a claim fails. Recorded mode replays any past run. Live mode tails a run in progress. Tests in [prototypes/replay/testing.md](prototypes/replay/testing.md).
+[replay/](replay/) replays a real production run from the actual Cloud Run logs and claim ledger. The agent graph lights up stage by stage, story lanes show repair rounds, and a rewrite loop fires when a claim fails. Recorded mode replays any past run. Live mode tails a run in progress. Tests in [replay/testing.md](replay/testing.md).
 
 ```bash
-cd prototypes/replay && python3 -m http.server 8000   # then open http://localhost:8000
+cd replay && python3 -m http.server 8000   # then open http://localhost:8000
 ```
 
-![Replay of the real Aug 11 production run, 4x speed](prototypes/replay/media/replay.gif)
+![Replay of the real Aug 11 production run, 4x speed](replay/media/replay.gif)
 
 An example from a live-tailed run. The fact-check found 2 bad claims (the red chips), the router went amber, and REWRITE #1 fired, all while the run was still going:
 
-![Live mode catching the rewrite loop](prototypes/replay/media/shot3-live-rewrite-loop.jpg)
+![Live mode catching the rewrite loop](replay/media/shot3-live-rewrite-loop.jpg)
 
 The replay needs no hooks inside the pipeline and no credentials in the browser. It rebuilds everything from the run's own logs, either live or after the fact.
 
@@ -237,5 +237,5 @@ The replay needs no hooks inside the pipeline and no credentials in the browser.
 |---|---|
 | [pipeline/](pipeline/) | the entire pipeline |
 |  [shownotes/](shownotes/) | post-production job: Gemma shownotes + Veo video edition |
-| [prototypes/replay/](prototypes/replay/) | mission replay page (recorded + live) |
+| [replay/](replay/) | mission replay page (recorded + live) |
 | [assets/](assets/) | diagram + cover sources and render scripts |

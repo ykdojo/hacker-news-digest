@@ -3,4 +3,4 @@ __pycache__/
 .DS_Store
 .venv/
 pipeline/out/
-prototypes/replay/live.json
+replay/live.json
