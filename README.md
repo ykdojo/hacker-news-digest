@@ -19,7 +19,7 @@ Built for the [All Things Agentic Hackathon](https://allthingsagentichackathon.d
 Deterministic code owns the structure of the ADK agent graph. It also handles:
 
 - fetching the stories and their linked articles
-- scoring them
+- scoring them by points and comment activity to select the initial pool of candidate stories
 - the claim ledger (the record of every checked claim, published with each episode)
 - routing between stages
 - publishing
