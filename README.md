@@ -213,7 +213,7 @@ GEMINI_API_KEY=$KEY PUBLISH_BUCKET=$BUCKET GOOGLE_CLOUD_PROJECT=$PROJECT \
 - `MAX_PICKS`: maximum stories per episode, default 10. Also caps how many are summarized in parallel
 - `SEGMENT_WORDS`: target words per TTS segment, default 160 (about a minute of speech)
 - `SEAM_GAP_MS`: silence inserted between TTS segments, default 350
-- `INTRO_MUSIC=0`: disable the Lyria intro theme, which is on by default. A Lyria failure just skips the music
+- `INTRO_MUSIC=0`: disable the Lyria intro theme, which is on by default
 
 ## Mission replay
 
