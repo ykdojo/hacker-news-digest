@@ -25,7 +25,7 @@ Deterministic code owns the structure of the ADK agent graph. It also handles:
 
 Models own only what needs judgment:
 
-- picking the stories
+- picking the 7-10 stories for the episode out of the candidate pool
 - generating summaries
 - writing the script
 - extracting claims
