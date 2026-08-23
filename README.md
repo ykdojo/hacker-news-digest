@@ -207,7 +207,7 @@ GEMINI_API_KEY=$KEY PUBLISH_BUCKET=$BUCKET GOOGLE_CLOUD_PROJECT=$PROJECT \
 - `GOOGLE_CLOUD_LOCATION=global`: which Vertex AI endpoint serves the text-model calls. The global endpoint has the best model availability; a specific region also works
 - `PUBLISH_BUCKET`: Cloud Storage bucket name. Unset writes to `./out` locally
 - `STORY_CHECK=1`: per-story fact-checking. Recommended. It beat script-level-only checking in testing
-- `DRY_RUN=1`: stop before TTS and publishing, for cheap logic tests
+- `DRY_RUN=1`: stop before TTS and publishing, for quick logic tests
 - `ENABLE_TRACING=1`: export agent/tool/model spans to Cloud Trace
 - `WINDOW_HOURS`: lookback window in hours, default 26
 - `MAX_PICKS`: maximum stories per episode, default 10. Also caps how many are summarized in parallel
