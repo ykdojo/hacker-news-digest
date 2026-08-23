@@ -56,7 +56,7 @@ Both jobs run on dedicated least-privilege service accounts. The TTS step is the
 
 Frames from a video edition - Gemma writes each scene, Veo renders it:
 
-<img src="assets/stills/tldv-waterfall.jpg" width="32%"> <img src="assets/stills/library-dissolve.jpg" width="32%"> <img src="assets/stills/console-stone.jpg" width="32%">
+<img src="assets/stills/hosts.jpg" width="32%"> <img src="assets/stills/tldv-waterfall.jpg" width="32%"> <img src="assets/stills/console-stone.jpg" width="32%">
 
 [shownotes/](shownotes/) is a second Cloud Run job that runs after the audio pipeline. Gemma writes the episode description into the RSS feed, and Veo renders the optional video edition. The mechanics are in the architecture diagram above.
 
