@@ -58,7 +58,7 @@ Frames from a video edition - Gemma writes each scene, Veo renders it:
 
 <img src="assets/stills/tldv-waterfall.jpg" width="32%"> <img src="assets/stills/library-dissolve.jpg" width="32%"> <img src="assets/stills/console-stone.jpg" width="32%">
 
-[shownotes/](shownotes/) is a second Cloud Run job that runs after the audio pipeline. Gemma writes the episode description into the RSS feed, and Veo renders the optional video edition. The mechanics are in the architecture diagram above. Any failure leaves the feed exactly as the pipeline published it.
+[shownotes/](shownotes/) is a second Cloud Run job that runs after the audio pipeline. Gemma writes the episode description into the RSS feed, and Veo renders the optional video edition. The mechanics are in the architecture diagram above.
 
 The video is opt-in via `VIDEO=1` and costs roughly US$60 per episode, almost all of it Veo rendering. The shownotes step costs pennies.
 
