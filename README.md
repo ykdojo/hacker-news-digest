@@ -132,7 +132,7 @@ The goal: from a fresh clone to a real episode running on Cloud Run. Every comma
 
    Watch progress in the Cloud Run console (execution logs), or live-tail it into the replay page (step 9).
 
-   A note on quota. The pipeline summarizes stories in parallel, and a brand new project starts with very little `gemini-3.7-flash` quota, so calls can come back with a 429 error. If that happens, request quota for the model or set `WINDOW_HOURS=4` so fewer stories run at once.
+   A note on quota. The pipeline summarizes stories in parallel, and a brand new project starts with very little `gemini-3.7-flash` quota, so calls can come back with a 429 error. If that happens, request quota for the model or set `MAX_PICKS=3` so fewer stories are summarized in parallel. `WINDOW_HOURS=4` also helps by shrinking the slice of Hacker News being considered.
 8. **Subscribe**: when the run finishes, paste `https://storage.googleapis.com/$BUCKET/feed.xml` into any podcast app that follows shows by URL. The episode mp3, script, and claim ledger are all in the bucket.
 9. **Watch it as a mission replay** (optional, no extra credentials): see [prototypes/replay](prototypes/replay/). `fetch_run.py --date YYYY-MM-DD` rebuilds any past run into an animated replay, and `tail_run.py` live-tails a running one.
 10. **Traces** (optional): with `ENABLE_TRACING=1` set (step 6 sets it), every agent/tool/model step shows up in Cloud Trace: Console > Trace explorer.
@@ -210,6 +210,7 @@ GEMINI_API_KEY=$KEY PUBLISH_BUCKET=$BUCKET GOOGLE_CLOUD_PROJECT=$PROJECT \
 - `DRY_RUN=1`: stop before TTS and publishing, for cheap logic tests
 - `ENABLE_TRACING=1`: export agent/tool/model spans to Cloud Trace
 - `WINDOW_HOURS`: lookback window in hours, default 26
+- `MAX_PICKS`: maximum stories per episode, default 10. Also caps how many are summarized in parallel
 - `SEGMENT_WORDS`: target words per TTS segment, default 160 (about a minute of speech)
 - `SEAM_GAP_MS`: silence inserted between TTS segments, default 350
 - `INTRO_MUSIC=0`: disable the Lyria intro theme, which is on by default. A Lyria failure just skips the music
